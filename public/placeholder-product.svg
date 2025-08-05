@@ -1,0 +1,9 @@
+<svg width="400" height="500" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="500" fill="#1a1a1a"/>
+  <rect x="50" y="100" width="300" height="300" rx="8" fill="#2a2a2a" stroke="#d4af37" stroke-width="2"/>
+  <circle cx="200" cy="180" r="30" fill="#d4af37" opacity="0.3"/>
+  <rect x="150" y="220" width="100" height="8" rx="4" fill="#d4af37" opacity="0.5"/>
+  <rect x="170" y="240" width="60" height="6" rx="3" fill="#d4af37" opacity="0.3"/>
+  <text x="200" y="320" text-anchor="middle" fill="#d4af37" font-family="serif" font-size="14" font-weight="300">JOOKA</text>
+  <text x="200" y="340" text-anchor="middle" fill="#d4af37" font-family="serif" font-size="10" opacity="0.7">LUXURY FASHION</text>
+</svg>

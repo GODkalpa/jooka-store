@@ -1,0 +1,23 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "product_variants",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "product_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "color",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "size",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,105 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - users can only read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow admin users to read all users
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // User profiles - users can only read/write their own profile
+    match /profiles/{profileId} {
+      allow read, write: if request.auth != null && 
+        resource.data.user_id == request.auth.uid;
+      // Allow admin users to read all profiles
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Products collection - PUBLIC READ ACCESS for all users, admin write access
+    match /products/{productId} {
+      // Allow anyone to read products (for public product catalog)
+      allow read: if true;
+      
+      // Only authenticated admin users can write/update/delete products
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Product variants collection - PUBLIC READ ACCESS for all users, admin write access
+    match /product_variants/{variantId} {
+      // Allow anyone to read product variants (for public product catalog)
+      allow read: if true;
+      
+      // Only authenticated admin users can write/update/delete variants
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Inventory transactions collection - admin only
+    match /inventory_transactions/{transactionId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Categories collection - PUBLIC READ ACCESS for all users, admin write access
+    match /categories/{categoryId} {
+      // Allow anyone to read categories (for public category listing)
+      allow read: if true;
+      
+      // Only authenticated admin users can write/update/delete categories
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Orders collection - users can only access their own orders
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null && 
+        resource.data.user_id == request.auth.uid;
+      // Allow admin users to read all orders
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Order items - users can only access items from their own orders
+    match /order_items/{orderItemId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/orders/$(resource.data.order_id)).data.user_id == request.auth.uid;
+      // Allow admin users to read all order items
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Cart items - users can only access their own cart items
+    match /cart_items/{cartItemId} {
+      allow read, write: if request.auth != null && 
+        resource.data.user_id == request.auth.uid;
+    }
+    
+    // User addresses - users can only access their own addresses
+    match /addresses/{addressId} {
+      allow read, write: if request.auth != null && 
+        resource.data.user_id == request.auth.uid;
+    }
+    
+    // Notifications - users can only read their own notifications
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null && 
+        resource.data.user_id == request.auth.uid;
+      // Only system/admin can write notifications
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Audit logs - only admin users can read audit logs
+    match /audit_logs/{logId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // System can write audit logs
+      allow write: if true;
+    }
+  }
+}

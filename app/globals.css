@@ -1,0 +1,254 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:wght@300;400;500&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #111111;
+    color: #F5F5F5;
+    /* Performance optimizations */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Optimize transitions and animations */
+  * {
+    will-change: auto;
+  }
+  
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+    color: #D4AF37;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gold text-black px-6 py-3 rounded-md font-semibold hover:bg-charcoal hover:text-gold border-2 border-gold transition-all duration-300;
+  }
+
+  .btn-secondary {
+    @apply border-2 border-gold text-gold px-6 py-3 rounded-md font-semibold hover:bg-gold hover:text-black transition-all duration-300;
+  }
+
+  /* Animation classes for hydration-safe animations */
+  .animate-fade-in-left {
+    animation: fadeInLeft 0.4s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in-right {
+    animation: fadeInRight 0.5s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out forwards;
+  }
+
+  @keyframes fadeInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  .card-product {
+    @apply bg-charcoal rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+  }
+
+  .product-image-gallery {
+    @apply relative overflow-hidden rounded-2xl bg-charcoal shadow-2xl;
+  }
+
+  .product-thumbnail {
+    @apply relative flex-shrink-0 rounded-xl overflow-hidden border-3 transition-all duration-300;
+  }
+
+  .product-thumbnail.active {
+    @apply border-gold shadow-lg shadow-gold/25 scale-105;
+  }
+
+  .product-thumbnail.inactive {
+    @apply border-gray-600 hover:border-gold/50;
+  }
+
+  .product-option-button {
+    @apply border-2 rounded-xl font-semibold transition-all duration-300;
+  }
+
+  .product-option-button.selected {
+    @apply border-gold bg-gold text-black shadow-lg shadow-gold/25;
+  }
+
+  .product-option-button.unselected {
+    @apply border-gray-600 text-gray-300 hover:border-gold hover:text-gold;
+  }
+
+  .feature-card {
+    @apply flex items-center space-x-3 p-4 bg-charcoal/30 rounded-lg border border-gray-700 transition-all duration-300 hover:bg-charcoal/50;
+  }
+
+  .quantity-control {
+    @apply flex items-center border-2 border-gray-600 rounded-xl overflow-hidden;
+  }
+
+  .quantity-button {
+    @apply p-3 hover:bg-gold hover:text-black transition-all duration-300;
+  }
+}
+/* Pe
+rformance utilities */
+@layer utilities {
+  .gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+  
+  .smooth-transition {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .fast-transition {
+    transition: all 0.1s ease-out;
+  }
+  
+  /* Optimize loading states */
+  .loading-skeleton {
+    background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+  
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  
+  /* Optimize images */
+  .optimized-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
+  /* Mobile-first responsive utilities */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .mobile-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Touch-friendly tap targets */
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Safe area handling for mobile devices */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}

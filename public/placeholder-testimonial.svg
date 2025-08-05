@@ -1,0 +1,7 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="100" fill="#1a1a1a"/>
+  <circle cx="100" cy="100" r="90" fill="#2a2a2a" stroke="#d4af37" stroke-width="2"/>
+  <circle cx="100" cy="80" r="25" fill="#d4af37" opacity="0.3"/>
+  <path d="M70 120 Q100 140 130 120" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.5"/>
+  <text x="100" y="160" text-anchor="middle" fill="#d4af37" font-family="serif" font-size="24" font-weight="300">J</text>
+</svg>
