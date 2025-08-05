@@ -18,7 +18,14 @@ const updateCartItemSchema = z.object({
 // Get user's cart
 async function getCart(request: AuthenticatedRequest) {
   try {
-    const userId = request.user.id;
+    const userId = request.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User not authenticated' },
+        { status: 401 }
+      );
+    }
     const adminDb = new FirebaseAdminDatabaseService();
     
     // For now, return empty cart since we don't have cart implementation in admin service
@@ -41,7 +48,14 @@ async function getCart(request: AuthenticatedRequest) {
 // Add item to cart
 async function addToCart(request: AuthenticatedRequest) {
   try {
-    const userId = request.user.id;
+    const userId = request.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User not authenticated' },
+        { status: 401 }
+      );
+    }
     const body = await request.json();
     const validationResult = addToCartSchema.safeParse(body);
 
@@ -71,7 +85,14 @@ async function addToCart(request: AuthenticatedRequest) {
 // Clear cart
 async function clearCart(request: AuthenticatedRequest) {
   try {
-    const userId = request.user.id;
+    const userId = request.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User not authenticated' },
+        { status: 401 }
+      );
+    }
     
     // For now, just return success - cart functionality can be implemented later
     return NextResponse.json({

@@ -135,8 +135,8 @@ export default function CustomerAddresses() {
           {addresses.map((address) => (
             <AddressCard
               key={address.id}
-              address={address}
-              onEdit={() => handleEdit(address)}
+              address={address as unknown as Address}
+              onEdit={() => handleEdit(address as unknown as Address)}
               onDelete={() => handleDelete(address.id)}
               onSetDefault={() => handleSetDefault(address.id)}
             />

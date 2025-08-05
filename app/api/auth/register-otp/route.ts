@@ -15,65 +15,6 @@ export async function POST(request: NextRequest) {
       { error: 'This registration method is deprecated. Please use /api/register-otp for OTP-based registration.' },
       { status: 410 }
     );
-    
-    // Validate the registration data
-    const validation = validateUserRegistration(body);
-    if (!validation.success) {
-      console.error('Validation failed:', validation.error.errors);
-      return NextResponse.json(
-        { error: 'Invalid registration data', details: validation.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const { fullName, email, phone, password } = validation.data;
-
-    // Clean up expired registrations
-    PendingRegistrationService.cleanupExpired();
-
-    // Check if there's already a pending registration for this email
-    const existingRegistration = PendingRegistrationService.get(email);
-    if (existingRegistration && existingRegistration.attempts >= 3) {
-      console.warn('Too many attempts for email:', email);
-      return NextResponse.json(
-        { error: 'Too many registration attempts. Please try again later.' },
-        { status: 429 }
-      );
-    }
-
-    // Generate OTP
-    const otpCode = PendingRegistrationService.generateOTP();
-
-    // Store the registration data temporarily
-    PendingRegistrationService.store(email, {
-      data: { fullName, email, phone, password, confirmPassword: password },
-      otpCode,
-      timestamp: Date.now(),
-      attempts: (existingRegistration?.attempts || 0) + 1
-    });
-
-    console.log('Sending OTP email to:', email);
-
-    // Send OTP email
-    const emailService = EmailService.getInstance();
-    const emailResult = await emailService.sendOTP(email, otpCode, fullName);
-
-    if (!emailResult.success) {
-      // Remove from pending registrations if email fails
-      PendingRegistrationService.delete(email);
-      return NextResponse.json(
-        { error: emailResult.error || 'Failed to send verification email' },
-        { status: 500 }
-      );
-    }
-
-    console.log('OTP sent successfully to:', email);
-
-    return NextResponse.json({
-      message: 'Verification code sent to your email. Please check your inbox.',
-      email: email
-    });
-
   } catch (error) {
     console.error('OTP Registration error:', error);
     return NextResponse.json(

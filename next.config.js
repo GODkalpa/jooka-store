@@ -43,12 +43,7 @@ const nextConfig = {
   },
   // Reduce bundle size
   webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'framer-motion': 'framer-motion/dist/framer-motion',
-      }
-    }
+    // Remove problematic framer-motion alias that was causing build failures
     return config
   },
 }

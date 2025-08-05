@@ -321,7 +321,7 @@ export class FirebaseOTPService {
    */
   static async cleanupExpiredOTPs(): Promise<void> {
     try {
-      const db = getFirebaseDb();
+      const db = getAdminDb();
       // This would require a more complex query in a real implementation
       // For now, individual OTPs are cleaned up when accessed
       console.log('OTP cleanup completed');

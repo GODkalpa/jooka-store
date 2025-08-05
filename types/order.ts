@@ -1,6 +1,12 @@
-import { User } from './auth'
+import { User, Address } from './firebase'
 import { Product } from './product'
-import { Address, PaymentMethod } from './auth'
+
+// Define PaymentMethod locally since it's not in firebase
+export interface PaymentMethod {
+  id: string
+  type: 'card' | 'paypal' | 'bank_transfer'
+  details: any
+}
 
 export interface Order {
   id: string

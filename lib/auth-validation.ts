@@ -60,7 +60,7 @@ export function validateEmailDomain(email: string): boolean {
   ];
 
   const domain = email.split('@')[1]?.toLowerCase();
-  return domain && !disposableEmailDomains.includes(domain);
+  return Boolean(domain && !disposableEmailDomains.includes(domain));
 }
 
 // Enhanced registration schema

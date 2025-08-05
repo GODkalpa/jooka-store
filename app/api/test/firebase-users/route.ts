@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     console.log('📊 Users collection size:', usersSnapshot.size);
     console.log('📊 Users collection empty:', usersSnapshot.empty);
     
-    const users = [];
+    const users: any[] = [];
     usersSnapshot.forEach((doc) => {
       const userData = doc.data();
       users.push({
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const profilesSnapshot = await db.collection('profiles').get();
     console.log('📊 Profiles collection size:', profilesSnapshot.size);
     
-    const profiles = [];
+    const profiles: any[] = [];
     profilesSnapshot.forEach((doc) => {
       const profileData = doc.data();
       profiles.push({

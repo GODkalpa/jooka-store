@@ -52,7 +52,14 @@ const createOrderSchema = z.object({
 
 async function getOrders(request: AuthenticatedRequest) {
   try {
-    const userId = request.user.id;
+    const userId = request.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User not authenticated' },
+        { status: 401 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -107,7 +114,16 @@ async function getOrders(request: AuthenticatedRequest) {
 async function createOrder(request: AuthenticatedRequest) {
   try {
     console.log('DEBUG: Order creation API called');
-    console.log('DEBUG: User authenticated:', request.user.id);
+    
+    const userId = request.user?.id;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User not authenticated' },
+        { status: 401 }
+      );
+    }
+    
+    console.log('DEBUG: User authenticated:', userId);
 
     const body = await request.json();
     console.log('DEBUG: Request body received:', JSON.stringify(body, null, 2));
@@ -125,7 +141,6 @@ async function createOrder(request: AuthenticatedRequest) {
 
     console.log('DEBUG: Validation passed, processing order...');
     const { shippingAddress, billingAddress, paymentMethod, cartItems, email, phone } = validationResult.data;
-    const userId = request.user.id;
 
     // Initialize admin database service
     const adminDb = new FirebaseAdminDatabaseService();

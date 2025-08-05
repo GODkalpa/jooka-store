@@ -71,43 +71,6 @@ export async function POST(request: NextRequest) {
       { status: 410 }
     );
 
-    console.log('User account created successfully for:', email);
-
-    // Create user profile in database using Admin SDK
-    try {
-      console.log('Creating user document in Firestore...');
-      const userResult = await createUserDocument(authResult.user!.uid, {
-        email: email,
-        role: 'customer'
-      });
-
-      if (userResult.success) {
-        console.log('User document created, updating profile...');
-        // Update user profile with additional information
-        await updateUserProfile(authResult.user!.uid, {
-          full_name: fullName,
-          phone: phone,
-          email: email
-        });
-        console.log('User profile updated successfully');
-      } else {
-        console.error('Failed to create user document:', userResult.error);
-      }
-    } catch (dbError) {
-      console.error('Failed to create user profile:', dbError);
-      // User is created in Firebase but profile creation failed
-      // This is not a critical error, user can complete profile later
-    }
-
-    // Clean up pending registration
-    pendingRegistrations.delete(email);
-
-    return NextResponse.json({
-      message: 'Account created successfully! Please check your email for verification.',
-      email: email,
-      userId: authResult.user!.uid
-    });
-
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(

@@ -27,24 +27,24 @@ async function getDashboardData(request: NextRequest) {
       totalOrders: 0,
       pendingOrders: 0,
       completedOrders: 0,
-      totalAddresses: addresses.success ? addresses.data.length : 0,
-      cartItemsCount: cartItems.success ? cartItems.data.length : 0,
-      unreadNotifications: notifications.success ? notifications.data.length : 0
+      totalAddresses: addresses.success ? addresses.data?.length || 0 : 0,
+      cartItemsCount: cartItems.success ? cartItems.data?.length || 0 : 0,
+      unreadNotifications: notifications.success ? notifications.data?.length || 0 : 0
     };
 
-    if (recentOrders.success) {
+    if (recentOrders.success && recentOrders.data) {
       stats.totalOrders = recentOrders.data.length;
-      stats.pendingOrders = recentOrders.data.filter(order => 
+      stats.pendingOrders = recentOrders.data.filter((order: any) => 
         ['pending', 'processing'].includes(order.status)
       ).length;
-      stats.completedOrders = recentOrders.data.filter(order => 
+      stats.completedOrders = recentOrders.data.filter((order: any) => 
         order.status === 'delivered'
       ).length;
     }
 
     // Get default address
-    const defaultAddress = addresses.success 
-      ? addresses.data.find(addr => addr.is_default) 
+    const defaultAddress = addresses.success && addresses.data
+      ? addresses.data.find((addr: any) => addr.is_default) 
       : null;
 
     // Prepare response data
@@ -55,9 +55,9 @@ async function getDashboardData(request: NextRequest) {
       defaultAddress,
       cartSummary: {
         itemCount: stats.cartItemsCount,
-        items: cartItems.success ? cartItems.data.slice(0, 3) : [] // Show first 3 items
+        items: cartItems.success && cartItems.data ? cartItems.data.slice(0, 3) : [] // Show first 3 items
       },
-      notifications: notifications.success ? notifications.data.slice(0, 5) : [], // Show first 5 notifications
+      notifications: notifications.success && notifications.data ? notifications.data.slice(0, 5) : [], // Show first 5 notifications
       quickActions: [
         {
           id: 'view_orders',

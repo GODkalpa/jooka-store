@@ -50,9 +50,9 @@ async function createCategory(request: NextRequest) {
     const categoryData = {
       name: validationResult.data.name,
       slug: validationResult.data.slug,
-      description: validationResult.data.description || null,
-      image_url: validationResult.data.imageUrl || null,
-      parent_id: validationResult.data.parentId || null,
+      description: validationResult.data.description || undefined,
+      image_url: validationResult.data.imageUrl || undefined,
+      parent_id: validationResult.data.parentId || undefined,
       sort_order: validationResult.data.sortOrder,
       is_active: validationResult.data.isActive,
     };

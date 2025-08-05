@@ -64,8 +64,8 @@ export default function ColorImageManager({
   const removeImage = useCallback((imageId: string) => {
     const filtered = images.filter(img => img.id !== imageId);
     // If we removed the primary image, make the first remaining image primary
-    if (filtered.length > 0 && !filtered.some(img => img.isPrimary)) {
-      filtered[0].isPrimary = true;
+    if (filtered.length > 0 && !filtered.some(img => img.is_primary)) {
+      filtered[0].is_primary = true;
     }
     onChange(filtered);
   }, [images, onChange]);

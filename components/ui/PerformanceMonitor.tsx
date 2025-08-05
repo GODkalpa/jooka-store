@@ -19,7 +19,7 @@ export default function PerformanceMonitor() {
           console.log(`🚀 Page Load Performance for ${pathname}:`, {
             domContentLoaded: Math.round(navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart),
             loadComplete: Math.round(navEntry.loadEventEnd - navEntry.loadEventStart),
-            totalTime: Math.round(navEntry.loadEventEnd - navEntry.navigationStart)
+            totalTime: Math.round(navEntry.loadEventEnd - (navEntry as any).navigationStart)
           })
         }
       }

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { verifyOTPAndSignIn } from '@/lib/firebase/auth';
 import { useAuth } from '@/lib/auth/firebase-auth';
 
-export default function EmailLinkVerificationPage() {
+function EmailLinkVerificationContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -145,4 +145,20 @@ export default function EmailLinkVerificationPage() {
   }
 
   return null;
+}
+
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37]"></div>
+    </div>
+  );
+}
+
+export default function EmailLinkVerificationPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <EmailLinkVerificationContent />
+    </Suspense>
+  );
 }

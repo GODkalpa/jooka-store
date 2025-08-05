@@ -5,7 +5,8 @@ import {
   orderBy, 
   limit as firestoreLimit,
   Timestamp,
-  DocumentSnapshot
+  DocumentSnapshot,
+  QueryConstraint
 } from 'firebase/firestore';
 import {
   getDocument,
@@ -327,7 +328,8 @@ export class FirebaseDatabaseService {
         products.map(async (product) => {
           let category = undefined;
           if (product.category_id) {
-            category = await getDocument<Category>(COLLECTIONS.CATEGORIES, product.category_id);
+            const categoryDoc = await getDocument<Category>(COLLECTIONS.CATEGORIES, product.category_id);
+            category = categoryDoc || undefined;
           }
           return {
             ...product,
@@ -394,9 +396,10 @@ export class FirebaseDatabaseService {
       }
 
       // Get category if exists
-      let category = undefined;
+      let category: Category | undefined = undefined;
       if (product.category_id) {
-        category = await getDocument<Category>(COLLECTIONS.CATEGORIES, product.category_id);
+        const categoryDoc = await getDocument<Category>(COLLECTIONS.CATEGORIES, product.category_id);
+        category = categoryDoc || undefined;
       }
 
       const productWithCategory: ProductWithCategory = {
@@ -424,9 +427,10 @@ export class FirebaseDatabaseService {
       const product = products[0];
 
       // Get category if exists
-      let category = undefined;
+      let category: Category | undefined = undefined;
       if (product.category_id) {
-        category = await getDocument<Category>(COLLECTIONS.CATEGORIES, product.category_id);
+        const categoryDoc = await getDocument<Category>(COLLECTIONS.CATEGORIES, product.category_id);
+        category = categoryDoc || undefined;
       }
 
       const productWithCategory: ProductWithCategory = {
@@ -443,13 +447,16 @@ export class FirebaseDatabaseService {
   async createProduct(productData: CreateProductData): Promise<ApiResponse<Product>> {
     try {
       // Generate slug if not provided
-      if (!productData.slug) {
-        productData.slug = productData.name.toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '');
-      }
+      const slug = productData.slug || productData.name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
 
-      const productId = await addDocument<Product>(COLLECTIONS.PRODUCTS, productData);
+      const productToCreate = {
+        ...productData,
+        slug
+      };
+
+      const productId = await addDocument<Product>(COLLECTIONS.PRODUCTS, productToCreate);
       const product = await getDocument<Product>(COLLECTIONS.PRODUCTS, productId);
 
       return { data: product!, success: true };
@@ -843,7 +850,7 @@ export class FirebaseDatabaseService {
   // User-specific order operations
   async getUserOrders(userId: string, options?: { limit?: number }): Promise<ApiResponse<OrderWithItems[]>> {
     try {
-      const constraints = [
+      const constraints: QueryConstraint[] = [
         where('user_id', '==', userId),
         orderBy('created_at', 'desc')
       ];
@@ -976,7 +983,7 @@ export class FirebaseDatabaseService {
 
       // Filter products with low stock
       const lowStockProducts = products.filter(product => 
-        product.stock_quantity <= threshold && product.stock_quantity > 0
+        product.inventory_count <= threshold && product.inventory_count > 0
       );
 
       return { data: lowStockProducts, success: true };

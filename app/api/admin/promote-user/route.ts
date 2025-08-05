@@ -36,7 +36,7 @@ async function promoteUser(request: NextRequest) {
     // Find user by email using search
     const usersResult = await db.getUsers({ search: email, limit: 1 });
 
-    if (!usersResult.success || !usersResult.data || usersResult.data.length === 0) {
+    if (usersResult.error || !usersResult.data || usersResult.data.length === 0) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }

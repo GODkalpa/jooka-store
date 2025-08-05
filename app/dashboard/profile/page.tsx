@@ -116,6 +116,10 @@ export default function CustomerProfile() {
       formData.append('file', file);
       formData.append('type', 'avatar');
 
+      if (!firebaseUser) {
+        throw new Error('User not authenticated');
+      }
+      
       const token = await firebaseUser.getIdToken();
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -145,7 +149,7 @@ export default function CustomerProfile() {
       });
 
       if (updateResponse.ok) {
-        setProfile(prev => prev ? { ...prev, avatar_url: result.url } : null);
+        setProfile(prev => prev ? { ...prev, avatar_url: result.url } : prev);
         setSuccess('Profile picture updated successfully!');
       }
     } catch (err) {

@@ -52,7 +52,7 @@ async function getCustomerDashboard(request: NextRequest) {
       .get();
     
     const cartItems = cartSnapshot.docs.map(doc => convertObjectDates({ id: doc.id, ...doc.data() }));
-    const cartItemCount = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const cartItemCount = cartItems.reduce((sum, item) => sum + ((item as any).quantity || 0), 0);
 
     // Fetch addresses
     const addressesSnapshot = await db.collection('addresses')
@@ -82,7 +82,7 @@ async function getCustomerDashboard(request: NextRequest) {
         ...userData,
         profile,
         email: decodedToken.email,
-        role: userData?.role || 'customer'
+        role: (userData as any)?.role || 'customer'
       },
       recentOrders,
       cart: {

@@ -107,11 +107,11 @@ export class EmailService {
       if (result.error) {
         console.log('🔥 Resend error:', result.error);
         // If it's a domain verification error, fall back to console logging for development
-        if (result.error.statusCode === 403 && result.error.error?.includes('verify a domain')) {
+        if ((result.error as any)?.statusCode === 403 && (result.error as any)?.error?.includes('verify a domain')) {
           console.log('🔥 Domain verification required, falling back to console logging for development');
           return this.logToConsole(options);
         }
-        return { success: false, error: result.error.message || result.error.error };
+        return { success: false, error: (result.error as any)?.message || (result.error as any)?.error || 'Unknown error' };
       }
 
       console.log('🔥 Email sent successfully with Resend');
@@ -133,7 +133,7 @@ export class EmailService {
     try {
       const nodemailer = await import('nodemailer');
 
-      const transporter = nodemailer.default.createTransporter({
+      const transporter = nodemailer.default.createTransport({
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || '587'),
         secure: process.env.SMTP_SECURE === 'true',

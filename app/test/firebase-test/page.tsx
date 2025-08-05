@@ -26,23 +26,23 @@ export default function FirebaseTestPage() {
       };
 
       console.log('Environment variables:', envVars);
-      setDetails(prev => ({ ...prev, envVars }));
+      setDetails((prev: any) => ({ ...prev, envVars }));
 
       // Test Firebase app initialization
       const app = getFirebaseApp();
       console.log('Firebase app:', app);
-      setDetails(prev => ({ ...prev, app: !!app }));
+      setDetails((prev: any) => ({ ...prev, app: !!app }));
 
       // Test Firebase auth initialization
       const auth = getFirebaseAuth();
       console.log('Firebase auth:', auth);
-      setDetails(prev => ({ ...prev, auth: !!auth }));
+      setDetails((prev: any) => ({ ...prev, auth: !!auth }));
 
       setStatus('Firebase configuration test completed successfully!');
     } catch (error) {
       console.error('Firebase test error:', error);
       setStatus(`Firebase test failed: ${error}`);
-      setDetails(prev => ({ ...prev, error: error instanceof Error ? error.message : 'Unknown error' }));
+      setDetails((prev: any) => ({ ...prev, error: error instanceof Error ? error.message : 'Unknown error' }));
     }
   };
 
@@ -73,11 +73,11 @@ export default function FirebaseTestPage() {
         setStatus(`Email test failed: ${result.error}`);
       }
       
-      setDetails(prev => ({ ...prev, emailTest: result }));
+      setDetails((prev: any) => ({ ...prev, emailTest: result }));
     } catch (error) {
       console.error('Email test error:', error);
       setStatus(`Email test failed: ${error}`);
-      setDetails(prev => ({ ...prev, emailTestError: error instanceof Error ? error.message : 'Unknown error' }));
+      setDetails((prev: any) => ({ ...prev, emailTestError: error instanceof Error ? error.message : 'Unknown error' }));
     }
   };
 

@@ -108,7 +108,7 @@ export default function AdminOrderDetailPage() {
   const updateOrderStatus = async (newStatus: string) => {
     setUpdating(true);
     try {
-      console.log(`Updating order ${orderId} status from ${order.status} to ${newStatus}`);
+      console.log(`Updating order ${orderId} status from ${order?.status} to ${newStatus}`);
       await api.put(`/api/orders/${orderId}`, { status: newStatus });
 
       await fetchOrder(); // Refresh order data

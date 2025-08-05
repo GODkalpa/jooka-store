@@ -94,7 +94,7 @@ async function createProductVariant(request: AuthenticatedRequest, { params }: {
 
         return NextResponse.json({
             message: 'Product variant created successfully',
-            data: result.data[0]
+            data: result.data?.[0]
         }, { status: 201 });
     } catch (error) {
         console.error('Create product variant error:', error);
@@ -145,7 +145,7 @@ async function bulkUpdateVariants(request: AuthenticatedRequest, { params }: { p
             );
 
             if (currentVariant) {
-                const quantityChange = update.inventory_count - currentVariant.inventory_count;
+                const quantityChange = (update as any).inventory_count - (currentVariant as any).inventory_count;
                 const updateResult = await adminVariantService.updateVariantInventory({
                     product_id: productId,
                     color: update.color,
@@ -163,9 +163,9 @@ async function bulkUpdateVariants(request: AuthenticatedRequest, { params }: { p
 
         const result = { data: updatedVariants, success: true };
 
-        if (result.error) {
+        if (!result.success) {
             return NextResponse.json(
-                { error: result.error },
+                { error: 'Failed to update variants' },
                 { status: 500 }
             );
         }

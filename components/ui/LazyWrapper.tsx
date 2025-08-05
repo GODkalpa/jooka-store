@@ -19,7 +19,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
     
     return (
       <Suspense fallback={customFallback || <PageLoader className={className} />}>
-        <LazyComponent {...componentProps} />
+        <LazyComponent {...(componentProps as any)} />
       </Suspense>
     )
   }

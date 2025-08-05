@@ -128,7 +128,7 @@ async function deleteAvatar(request: NextRequest) {
 
     // Update user profile to remove avatar URL
     const updateResult = await db.updateUserProfile(user.id, {
-      avatar_url: null,
+      avatar_url: undefined,
     });
 
     if (updateResult.error) {
