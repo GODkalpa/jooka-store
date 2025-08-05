@@ -81,7 +81,7 @@ export default function HomePage() {
       </ClientOnly>
 
       {/* Featured Products Section */}
-      <section className="relative py-24 px-8 md:px-12" suppressHydrationWarning>
+      <section className="relative py-16 sm:py-20 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12" suppressHydrationWarning>
         {/* Clean Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-black via-black/98 to-black" />
 
@@ -93,7 +93,7 @@ export default function HomePage() {
           }>
           {/* Section Header */}
           <MotionWrapper
-            className="text-center mb-20"
+            className="text-center mb-12 sm:mb-16 md:mb-20"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -151,7 +151,7 @@ export default function HomePage() {
 
           {/* Products Grid */}
           <MotionWrapper
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.8 }}
@@ -219,7 +219,7 @@ export default function HomePage() {
 
           {/* Call to Action */}
           <MotionWrapper
-            className="text-center mt-20"
+            className="text-center mt-12 sm:mt-16 md:mt-20"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.4 }}
