@@ -439,10 +439,10 @@ export default function ShopPage() {
         >
           {/* Grid Container */}
           <motion.div
-            className={`grid gap-6 md:gap-8 lg:gap-10 ${
+            className={`grid ${
               viewMode === 'grid'
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                : 'grid-cols-1 max-w-4xl mx-auto'
+                ? 'grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 md:gap-8 lg:gap-10'
+                : 'grid-cols-1 max-w-4xl mx-auto gap-6'
             }`}
             layout
             transition={{ duration: 0.6, ease: "easeInOut" }}

@@ -81,7 +81,7 @@ export default function HomePage() {
       </ClientOnly>
 
       {/* Featured Products Section */}
-      <section className="relative py-16 sm:py-20 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12" suppressHydrationWarning>
+      <section className="relative py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12" suppressHydrationWarning>
         {/* Clean Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-black via-black/98 to-black" />
 
@@ -93,7 +93,7 @@ export default function HomePage() {
           }>
           {/* Section Header */}
           <MotionWrapper
-            className="text-center mb-12 sm:mb-16 md:mb-20"
+            className="text-center mb-8 sm:mb-12 md:mb-16 lg:mb-20"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -106,38 +106,38 @@ export default function HomePage() {
               viewport={{ once: true }}
               className="inline-block"
             >
-              <span className="text-sm font-medium tracking-[0.2em] text-gold/60 uppercase mb-4 block" suppressHydrationWarning>
+              <span className="text-xs sm:text-sm font-medium tracking-[0.15em] sm:tracking-[0.2em] text-gold/60 uppercase mb-3 sm:mb-4 block" suppressHydrationWarning>
                 Curated Excellence
               </span>
             </MotionWrapper>
 
             <MotionWrapper
               as="h2"
-              className="text-5xl md:text-6xl lg:text-7xl font-serif font-light text-gold mb-8 tracking-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif font-light text-gold mb-6 sm:mb-8 tracking-tight leading-tight"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
               viewport={{ once: true }}
             >
               Featured
-              <span className="block text-4xl md:text-5xl lg:text-6xl text-ivory/90 font-light italic" suppressHydrationWarning>
+              <span className="block text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-ivory/90 font-light italic mt-1 sm:mt-2" suppressHydrationWarning>
                 Collection
               </span>
             </MotionWrapper>
 
             <MotionWrapper
               initial={{ opacity: 0, width: 0 }}
-              whileInView={{ opacity: 1, width: "4rem" }}
+              whileInView={{ opacity: 1, width: "3rem" }}
               transition={{ duration: 0.8, delay: 0.5 }}
               viewport={{ once: true }}
-              className="h-px bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mb-8"
+              className="h-px bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mb-6 sm:mb-8"
             >
               <div suppressHydrationWarning></div>
             </MotionWrapper>
 
             <MotionWrapper
               as="p"
-              className="text-lg md:text-xl text-ivory/70 max-w-3xl mx-auto leading-relaxed font-light"
+              className="text-sm sm:text-base md:text-lg lg:text-xl text-ivory/70 max-w-2xl lg:max-w-3xl mx-auto leading-relaxed font-light px-4 sm:px-0"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
@@ -151,7 +151,7 @@ export default function HomePage() {
 
           {/* Products Grid */}
           <MotionWrapper
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12"
+            className="featured-grid grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 md:gap-6 lg:gap-8 xl:gap-10"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.8 }}
@@ -162,7 +162,7 @@ export default function HomePage() {
               Array.from({ length: 4 }).map((_, index) => (
                 <MotionWrapper
                   key={`loading-${index}`}
-                  className="bg-black/40 backdrop-blur-sm border border-gold/10 rounded-lg aspect-[4/5] flex items-center justify-center"
+                  className="bg-black/40 backdrop-blur-sm border border-gold/10 rounded-lg aspect-[3/4] sm:aspect-[4/5] flex items-center justify-center"
                   initial={{ opacity: 0, y: 60, scale: 0.9 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{
@@ -172,7 +172,7 @@ export default function HomePage() {
                   }}
                   viewport={{ once: true }}
                 >
-                  <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" suppressHydrationWarning></div>
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" suppressHydrationWarning></div>
                 </MotionWrapper>
               ))
             ) : error ? (
@@ -219,7 +219,7 @@ export default function HomePage() {
 
           {/* Call to Action */}
           <MotionWrapper
-            className="text-center mt-12 sm:mt-16 md:mt-20"
+            className="text-center mt-8 sm:mt-12 md:mt-16 lg:mt-20"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.4 }}
@@ -227,7 +227,7 @@ export default function HomePage() {
           >
             <Link
               href="/shop"
-              className="inline-flex items-center px-8 py-4 text-sm font-medium tracking-[0.1em] text-gold border-2 border-gold/30 hover:border-gold hover:bg-gold hover:text-black transition-all duration-500 uppercase group hover:scale-105 active:scale-95 transform transition-transform"
+              className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-medium tracking-[0.1em] text-gold border-2 border-gold/30 hover:border-gold hover:bg-gold hover:text-black transition-all duration-500 uppercase group hover:scale-105 active:scale-95 transform transition-transform tap-target"
             >
               <span suppressHydrationWarning>Shop Now</span>
               <span className="ml-2 group-hover:ml-4 transition-all duration-300" suppressHydrationWarning>

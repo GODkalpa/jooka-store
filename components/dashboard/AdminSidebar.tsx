@@ -11,7 +11,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  FileText,
   ExternalLink,
   X,
 } from 'lucide-react';
@@ -22,7 +21,6 @@ const navigation = [
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Inventory', href: '/admin/inventory', icon: BarChart3 },
-  { name: 'CMS', href: '/admin/cms', icon: FileText },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
