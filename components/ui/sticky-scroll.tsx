@@ -50,14 +50,14 @@ const StickyScrollComponent = forwardRef<HTMLElement>((props, ref) => {
               </figure>
               <figure className='w-full'>
                 <img
-                  src='https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&auto=format&fit=crop'
-                  alt='Sustainable fashion materials'
+                  src='/stickyimages/mens-apparel-fashion-stores-interior-design-6.jpg'
+                  alt='Mennpnpm apparel fashion store interior'
                   className='transition-all duration-500 w-full h-80 align-bottom object-cover rounded-md hover:scale-105'
                 />
               </figure>
               <figure className='w-full'>
                 <img
-                  src='https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=500&auto=format&fit=crop'
+                  src='/stickyimages/tailors-hand-close-up-dressmaker-sewing-suit-fabric-with-hand-fashion-designer-tailor-sewer-workshop-studio-designing-new-collection-clothes_84738-6079.avif'
                   alt='Artisan craftsmanship'
                   className='transition-all duration-500 w-full h-80 align-bottom object-cover rounded-md hover:scale-105'
                 />
@@ -97,7 +97,7 @@ const StickyScrollComponent = forwardRef<HTMLElement>((props, ref) => {
               </figure>
               <figure className='w-full h-full relative group'>
                 <img
-                  src='https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500&auto=format&fit=crop'
+                  src='/stickyimages/bdcdcc7efc928f6128717f37461e30bb.jpg'
                   alt='Modern luxury fashion'
                   className='transition-all duration-500 h-full w-full align-bottom object-cover rounded-md group-hover:scale-105'
                 />
@@ -111,7 +111,7 @@ const StickyScrollComponent = forwardRef<HTMLElement>((props, ref) => {
             <div className='grid gap-3 col-span-4'>
               <figure className='w-full'>
                 <img
-                  src='https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=500&auto=format&fit=crop'
+                  src='/stickyimages/mens-apparel-fashion-stores-interior-design-5-1334x834.jpg'
                   alt='Fashion innovation'
                   className='transition-all duration-500 w-full h-80 align-bottom object-cover rounded-md hover:scale-105'
                 />
@@ -132,7 +132,7 @@ const StickyScrollComponent = forwardRef<HTMLElement>((props, ref) => {
               </figure>
               <figure className='w-full'>
                 <img
-                  src='https://images.unsplash.com/photo-1509631179647-0177331693ae?w=500&auto=format&fit=crop'
+                  src='/stickyimages/tailor.avif'
                   alt='Fashion craftsmanship'
                   className='transition-all duration-500 w-full h-80 align-bottom object-cover rounded-md hover:scale-105'
                 />
