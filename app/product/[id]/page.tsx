@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Minus, Plus, Heart, Share2, ChevronRight, Star, Truck, Shield, RotateCcw, Zap } from 'lucide-react'
+import { Minus, Plus, Heart, Share2, ChevronRight, Star } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
 import ProductCard from '@/components/ProductCard'
 import { formatPriceWithSymbol } from '@/lib/utils/currency'
@@ -441,37 +441,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               )}
             </div>
 
-            {/* Product Features */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center space-x-3 p-4 bg-charcoal/30 rounded-lg border border-gray-700">
-                <Truck className="w-6 h-6 text-gold" />
-                <div>
-                  <p className="font-semibold text-white">Free Shipping</p>
-                  <p className="text-sm text-gray-400">On orders over ₨ 5,000</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-4 bg-charcoal/30 rounded-lg border border-gray-700">
-                <Shield className="w-6 h-6 text-gold" />
-                <div>
-                  <p className="font-semibold text-white">Secure Payment</p>
-                  <p className="text-sm text-gray-400">100% protected</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-4 bg-charcoal/30 rounded-lg border border-gray-700">
-                <RotateCcw className="w-6 h-6 text-gold" />
-                <div>
-                  <p className="font-semibold text-white">Easy Returns</p>
-                  <p className="text-sm text-gray-400">30-day policy</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-4 bg-charcoal/30 rounded-lg border border-gray-700">
-                <Zap className="w-6 h-6 text-gold" />
-                <div>
-                  <p className="font-semibold text-white">Fast Delivery</p>
-                  <p className="text-sm text-gray-400">2-3 business days</p>
-                </div>
-              </div>
-            </div>
+
 
             {/* Size Selection */}
             {product.sizes && product.sizes.length > 0 && (
@@ -707,7 +677,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </div>
               <div className="flex justify-between py-3 border-b border-gray-600">
                 <span className="text-gray-400">Country of Origin</span>
-                <span className="text-white font-medium">Made in USA</span>
+                <span className="text-white font-medium">Made in Nepal</span>
               </div>
               <div className="flex justify-between py-3 border-b border-gray-600">
                 <span className="text-gray-400">SKU</span>
