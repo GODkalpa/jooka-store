@@ -77,10 +77,10 @@ const StickyScrollComponent = forwardRef<HTMLElement>((props, ref) => {
                   alt='JOOKA heritage collection'
                   className='transition-all duration-500 h-full w-full align-bottom object-cover rounded-md group-hover:scale-105'
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-md" />
-                <div className="absolute bottom-6 left-6 right-6">
-                  <h3 className="text-xl font-serif font-light text-gold mb-2">2019</h3>
-                  <p className="text-sm text-ivory/80 font-light">The beginning of our journey</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-md" />
+                <div className="absolute bottom-4 left-0 right-0 md:bottom-6 text-center px-4 md:px-6">
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-serif font-light text-gold mb-1 md:mb-2 drop-shadow-lg">2019</h3>
+                  <p className="text-xs md:text-sm text-white/90 font-light leading-relaxed drop-shadow-md">The beginning of our journey</p>
                 </div>
               </figure>
               <figure className='w-full h-full relative group'>
@@ -89,10 +89,10 @@ const StickyScrollComponent = forwardRef<HTMLElement>((props, ref) => {
                   alt='Timeless elegance'
                   className='transition-all duration-500 h-full w-full align-bottom object-cover rounded-md group-hover:scale-105'
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-md" />
-                <div className="absolute bottom-6 left-6 right-6">
-                  <h3 className="text-xl font-serif font-light text-gold mb-2">Craftsmanship</h3>
-                  <p className="text-sm text-ivory/80 font-light">Meticulous attention to detail</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-md" />
+                <div className="absolute bottom-4 left-0 right-0 md:bottom-6 flex flex-col items-center justify-center px-4 md:px-6">
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-serif font-light text-gold mb-1 md:mb-2 drop-shadow-lg text-center">Craftsmanship</h3>
+                  <p className="text-xs md:text-sm text-white/90 font-light leading-relaxed drop-shadow-md text-center">Meticulous attention to detail</p>
                 </div>
               </figure>
               <figure className='w-full h-full relative group'>
@@ -101,10 +101,10 @@ const StickyScrollComponent = forwardRef<HTMLElement>((props, ref) => {
                   alt='Modern luxury fashion'
                   className='transition-all duration-500 h-full w-full align-bottom object-cover rounded-md group-hover:scale-105'
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-md" />
-                <div className="absolute bottom-6 left-6 right-6">
-                  <h3 className="text-xl font-serif font-light text-gold mb-2">Innovation</h3>
-                  <p className="text-sm text-ivory/80 font-light">Modern luxury redefined</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-md" />
+                <div className="absolute bottom-4 left-0 right-0 md:bottom-6 text-center px-4 md:px-6">
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-serif font-light text-gold mb-1 md:mb-2 drop-shadow-lg">Innovation</h3>
+                  <p className="text-xs md:text-sm text-white/90 font-light leading-relaxed drop-shadow-md">Modern luxury redefined</p>
                 </div>
               </figure>
             </div>
@@ -152,10 +152,10 @@ const StickyScrollComponent = forwardRef<HTMLElement>((props, ref) => {
           <div className="max-w-7xl mx-auto px-6 text-center">
             <div className="space-y-6">
               <div className="h-px bg-gradient-to-r from-transparent via-gold to-transparent w-32 mx-auto" />
-              <h1 className='text-[12vw] md:text-[8vw] lg:text-[6vw] leading-[100%] uppercase font-serif font-light bg-gradient-to-r from-gold via-gold/80 to-ivory bg-clip-text text-transparent transition-all ease-linear'>
+              <h1 className='text-[12vw] md:text-[8vw] lg:text-[6vw] leading-[100%] uppercase font-serif font-light bg-gradient-to-r from-gold via-gold/80 to-ivory bg-clip-text text-transparent transition-all ease-linear overflow-hidden'>
                 JOOKA
               </h1>
-              <p className="text-ivory/60 font-light tracking-wide max-w-2xl mx-auto">
+              <p className="text-base md:text-lg text-ivory/60 font-light tracking-wide max-w-2xl mx-auto">
                 Where timeless elegance meets modern craftsmanship. Every piece tells a story of heritage, sustainability, and uncompromising quality.
               </p>
               <div className="h-px bg-gradient-to-r from-transparent via-gold to-transparent w-32 mx-auto" />
