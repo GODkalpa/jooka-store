@@ -78,9 +78,9 @@ const StickyScrollComponent = forwardRef<HTMLElement>((props, ref) => {
                   className='transition-all duration-500 h-full w-full align-bottom object-cover rounded-md group-hover:scale-105'
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-md" />
-                <div className="absolute bottom-4 left-0 right-0 md:bottom-6 text-center px-4 md:px-6">
-                  <h3 className="text-lg md:text-xl lg:text-2xl font-serif font-light text-gold mb-1 md:mb-2 drop-shadow-lg">2019</h3>
-                  <p className="text-xs md:text-sm text-white/90 font-light leading-relaxed drop-shadow-md">The beginning of our journey</p>
+                <div className="absolute bottom-4 left-0 right-0 md:bottom-6 flex flex-col items-center justify-center px-4 md:px-6">
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-serif font-light text-gold mb-1 md:mb-2 drop-shadow-lg text-center">2019</h3>
+                  <p className="text-xs md:text-sm text-white/90 font-light leading-relaxed drop-shadow-md text-center">The beginning of our journey</p>
                 </div>
               </figure>
               <figure className='w-full h-full relative group'>
@@ -102,9 +102,9 @@ const StickyScrollComponent = forwardRef<HTMLElement>((props, ref) => {
                   className='transition-all duration-500 h-full w-full align-bottom object-cover rounded-md group-hover:scale-105'
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-md" />
-                <div className="absolute bottom-4 left-0 right-0 md:bottom-6 text-center px-4 md:px-6">
-                  <h3 className="text-lg md:text-xl lg:text-2xl font-serif font-light text-gold mb-1 md:mb-2 drop-shadow-lg">Innovation</h3>
-                  <p className="text-xs md:text-sm text-white/90 font-light leading-relaxed drop-shadow-md">Modern luxury redefined</p>
+                <div className="absolute bottom-4 left-0 right-0 md:bottom-6 flex flex-col items-center justify-center px-4 md:px-6">
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-serif font-light text-gold mb-1 md:mb-2 drop-shadow-lg text-center">Innovation</h3>
+                  <p className="text-xs md:text-sm text-white/90 font-light leading-relaxed drop-shadow-md text-center">Modern luxury redefined</p>
                 </div>
               </figure>
             </div>
