@@ -133,12 +133,12 @@ export async function GET(
 
   } catch (error) {
     console.error(`❌ Error fetching conversation ${params.id}:`, error);
-    console.error('Error stack:', error.stack);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace available');
     return NextResponse.json(
       { 
         error: 'Failed to fetch conversation',
         details: process.env.NODE_ENV === 'development' ? {
-          message: error.message,
+          message: error instanceof Error ? error.message : 'Unknown error',
           conversationId: params.id
         } : undefined
       },

@@ -130,7 +130,7 @@ export default function CustomerMessaging({ className = '' }: CustomerMessagingP
     } catch (error) {
       console.error('Error loading messages:', error);
       // Only clear selected conversation on non-500 errors
-      if (!error.message?.includes('500')) {
+      if (!(error instanceof Error && error.message?.includes('500'))) {
         setSelectedConversation(null);
       }
     }
