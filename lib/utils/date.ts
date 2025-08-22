@@ -33,9 +33,8 @@ export function convertFirestoreDate(dateValue: any): string | null {
       // Check if it has any timestamp-like properties
       const keys = Object.keys(dateValue);
       
-      // If it's an empty object, skip it
+      // If it's an empty object, skip it silently
       if (keys.length === 0) {
-        console.warn('convertFirestoreDate: Received empty object for date conversion');
         return null;
       }
 
@@ -85,7 +84,10 @@ export function convertFirestoreDate(dateValue: any): string | null {
 
     return null;
   } catch (error) {
-    console.error('Date conversion error:', error, 'Input:', dateValue);
+    // Only log meaningful errors, not empty object conversions
+    if (dateValue && typeof dateValue === 'object' && Object.keys(dateValue).length > 0) {
+      console.error('Date conversion error:', error, 'Input:', dateValue);
+    }
     return null;
   }
 }
@@ -106,7 +108,14 @@ export function formatSafeDate(
   }
 ): string {
   try {
-    if (!dateValue) {
+    if (!dateValue || dateValue === undefined || dateValue === null) {
+      return 'No Date';
+    }
+    
+    // Check for empty objects first
+    if (typeof dateValue === 'object' && 
+        dateValue !== null && 
+        Object.keys(dateValue).length === 0) {
       return 'No Date';
     }
 
@@ -152,8 +161,11 @@ export function formatSafeDate(
 
     // Validate the date
     if (!date || isNaN(date.getTime())) {
-      console.warn('formatSafeDate: Could not parse date:', dateValue);
-      return 'Invalid Date';
+      // Only log warning for non-empty objects to reduce console noise
+      if (dateValue && typeof dateValue === 'object' && Object.keys(dateValue).length > 0) {
+        console.warn('formatSafeDate: Could not parse date:', dateValue);
+      }
+      return 'No Date';
     }
 
     return new Intl.DateTimeFormat('en-US', options).format(date);
@@ -176,10 +188,22 @@ export function convertObjectDates<T extends Record<string, any>>(
   const converted = { ...obj } as Record<string, any>;
   
   for (const field of dateFields) {
-    if (converted[field]) {
+    if (converted[field] !== undefined && converted[field] !== null) {
+      // Check if it's an empty object first
+      if (typeof converted[field] === 'object' && 
+          converted[field] !== null && 
+          Object.keys(converted[field]).length === 0) {
+        // Remove empty timestamp objects to avoid errors
+        delete converted[field];
+        continue;
+      }
+      
       const convertedDate = convertFirestoreDate(converted[field]);
       if (convertedDate) {
         converted[field] = convertedDate;
+      } else {
+        // If conversion fails, remove the field to avoid displaying invalid dates
+        delete converted[field];
       }
     }
   }

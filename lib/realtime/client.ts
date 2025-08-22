@@ -7,6 +7,7 @@ interface RealtimeClient {
   subscribeToAdminOrderNotifications: (callback: (payload: any) => void) => any;
   subscribeToLowStockAlerts: (threshold: number, callback: (payload: any) => void) => any;
   subscribeToUserNotifications: (userId: string, callback: (payload: any) => void) => any;
+  subscribe: (channelName: string, events: Record<string, (payload: any) => void>) => any;
   getChannelStatus: (channelName: string) => 'joined' | 'disconnected';
   unsubscribe: (channelName: string) => void;
 }
@@ -46,6 +47,12 @@ class MockRealtimeClient implements RealtimeClient {
     return { unsubscribe: () => this.unsubscribe(channelName) };
   }
 
+  subscribe(channelName: string, events: Record<string, (payload: any) => void>) {
+    console.log(`Mock: Subscribing to ${channelName} with events:`, Object.keys(events));
+    this.channels.set(channelName, { events, status: 'joined' });
+    return { unsubscribe: () => this.unsubscribe(channelName) };
+  }
+
   getChannelStatus(channelName: string): 'joined' | 'disconnected' {
     const channel = this.channels.get(channelName);
     return channel ? channel.status : 'disconnected';
@@ -57,10 +64,16 @@ class MockRealtimeClient implements RealtimeClient {
   }
 
   // Method to simulate real-time events (for testing)
-  simulateEvent(channelName: string, payload: any) {
+  simulateEvent(channelName: string, eventType: string, payload: any) {
     const channel = this.channels.get(channelName);
-    if (channel && channel.callback) {
-      channel.callback(payload);
+    if (channel) {
+      if (channel.callback) {
+        // Old-style single callback
+        channel.callback(payload);
+      } else if (channel.events && channel.events[eventType]) {
+        // New-style event-based callbacks
+        channel.events[eventType](payload);
+      }
     }
   }
 }

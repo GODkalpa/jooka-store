@@ -15,11 +15,13 @@ import {
   ArrowLeft,
   Store,
   X,
+  MessageCircle,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Orders', href: '/dashboard/orders', icon: ShoppingBag },
+  { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle },
   { name: 'Profile', href: '/dashboard/profile', icon: User },
   { name: 'Addresses', href: '/dashboard/addresses', icon: MapPin },
   { name: 'Payment Methods', href: '/dashboard/payments', icon: CreditCard },

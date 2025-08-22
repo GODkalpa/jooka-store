@@ -171,6 +171,50 @@ export interface Notification extends BaseDocument {
   action_url?: string;
 }
 
+// Messaging system interfaces
+export type ConversationStatus = 'open' | 'in-progress' | 'closed';
+export type ConversationPriority = 'low' | 'medium' | 'high';
+export type MessageSenderType = 'customer' | 'admin';
+
+export interface Conversation extends BaseDocument {
+  customer_id: string;
+  admin_id?: string;
+  subject: string;
+  status: ConversationStatus;
+  priority: ConversationPriority;
+  last_message?: string;
+  last_message_time?: Timestamp;
+  unread_count: {
+    customer: number;
+    admin: number;
+  };
+  order_id?: string; // Optional link to specific order
+  category: 'general' | 'order' | 'technical' | 'billing';
+}
+
+export interface Message extends BaseDocument {
+  conversation_id: string;
+  sender_id: string;
+  sender_type: MessageSenderType;
+  content: string;
+  read: boolean;
+  attachments?: string[]; // URLs to uploaded files
+  reply_to?: string; // ID of message being replied to
+}
+
+// Extended types for UI components
+export interface ConversationWithMessages extends Conversation {
+  messages?: Message[];
+  customer_email?: string;
+  admin_email?: string;
+  messages_count?: number;
+}
+
+export interface MessageWithSender extends Message {
+  sender_email?: string;
+  sender_name?: string;
+}
+
 // Audit log interface
 export interface AuditLog extends BaseDocument {
   user_id?: string;
@@ -352,6 +396,28 @@ export interface CreateOrderData extends Omit<Order, 'id' | 'created_at' | 'upda
   items: Omit<OrderItem, 'id' | 'created_at' | 'updated_at' | 'order_id'>[];
 }
 
+// Messaging form data types
+export interface CreateConversationData {
+  subject: string;
+  category: 'general' | 'order' | 'technical' | 'billing';
+  priority?: ConversationPriority;
+  initial_message: string;
+  order_id?: string;
+}
+
+export interface CreateMessageData {
+  conversation_id: string;
+  content: string;
+  attachments?: string[];
+  reply_to?: string;
+}
+
+export interface UpdateConversationData {
+  status?: ConversationStatus;
+  priority?: ConversationPriority;
+  admin_id?: string;
+}
+
 // Variant inventory management types
 export interface VariantInventoryUpdate {
   product_id: string;
@@ -367,4 +433,25 @@ export interface VariantStockCheck {
   color: string;
   size: string;
   requested_quantity: number;
+}
+
+// Messaging filters and pagination
+export interface ConversationFilters {
+  status?: ConversationStatus;
+  priority?: ConversationPriority;
+  category?: string;
+  customer_id?: string;
+  admin_id?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: 'created_at' | 'last_message_time' | 'priority';
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface MessageFilters {
+  conversation_id: string;
+  sender_type?: MessageSenderType;
+  page?: number;
+  limit?: number;
 }

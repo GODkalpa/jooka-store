@@ -2,6 +2,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { realtimeClient } from './client';
 import { useAuth } from '@/lib/auth/firebase-auth';
+import { convertFirestoreDate } from '@/lib/utils/date';
+import { Conversation, Message, ConversationWithMessages } from '@/types/firebase';
 
 // Hook for inventory updates
 export function useInventoryUpdates() {
@@ -256,5 +258,199 @@ export function useRealtimeDashboard() {
       setDashboardData(null);
       setLastUpdate(null);
     }
+  };
+}
+
+// Hook for messaging real-time updates
+export function useMessagingRealtime(conversationId?: string) {
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [newMessageCount, setNewMessageCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id || !conversationId) return;
+
+    try {
+      const handleNewMessage = (payload: any) => {
+        const message = payload.message;
+        setMessages(prev => {
+          // Avoid duplicates
+          if (prev.some(m => m.id === message.id)) return prev;
+          return [...prev, message].sort((a, b) => {
+            const aTime = convertFirestoreDate(a.created_at);
+            const bTime = convertFirestoreDate(b.created_at);
+            if (!aTime || !bTime) return 0;
+            return new Date(aTime).getTime() - new Date(bTime).getTime();
+          });
+        });
+        
+        // Increment count if message is not from current user
+        if (message.sender_id !== user.id) {
+          setNewMessageCount(prev => prev + 1);
+        }
+      };
+
+      const channelName = `conversation-${conversationId}`;
+      const channel = realtimeClient.subscribe(channelName, {
+        'new-message': handleNewMessage,
+        'message-read': (payload: any) => {
+          // Update message read status
+          setMessages(prev => prev.map(msg => 
+            msg.id === payload.messageId ? { ...msg, read: true } : msg
+          ));
+        }
+      });
+
+      // Check connection status
+      const checkStatus = () => {
+        try {
+          const status = realtimeClient.getChannelStatus(channelName);
+          setIsConnected(status === 'joined');
+        } catch (error) {
+          console.warn('Failed to check messaging connection status:', error);
+          setIsConnected(false);
+        }
+      };
+
+      const interval = setInterval(checkStatus, 2000);
+
+      return () => {
+        clearInterval(interval);
+        try {
+          realtimeClient.unsubscribe(channelName);
+        } catch (error) {
+          console.warn('Failed to unsubscribe from messaging updates:', error);
+        }
+      };
+    } catch (error) {
+      console.warn('Failed to set up realtime messaging:', error);
+      setIsConnected(false);
+    }
+  }, [user?.id, conversationId]);
+
+  const clearNewMessageCount = useCallback(() => {
+    setNewMessageCount(0);
+  }, []);
+
+  const addMessage = useCallback((message: Message) => {
+    setMessages(prev => [...prev, message].sort((a, b) => {
+      const aTime = convertFirestoreDate(a.created_at);
+      const bTime = convertFirestoreDate(b.created_at);
+      if (!aTime || !bTime) return 0;
+      return new Date(aTime).getTime() - new Date(bTime).getTime();
+    }));
+  }, []);
+
+  return { 
+    messages, 
+    isConnected, 
+    newMessageCount, 
+    clearNewMessageCount,
+    addMessage,
+    setMessages 
+  };
+}
+
+// Hook for conversation list real-time updates
+export function useConversationsRealtime() {
+  const { user, isAdmin } = useAuth();
+  const [conversations, setConversations] = useState<ConversationWithMessages[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [totalUnread, setTotalUnread] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    try {
+      const handleConversationUpdate = (payload: any) => {
+        const conversation = payload.conversation;
+        setConversations(prev => {
+          const existing = prev.find(c => c.id === conversation.id);
+          if (existing) {
+            return prev.map(c => c.id === conversation.id ? conversation : c)
+              .sort((a, b) => {
+                const aTime = convertFirestoreDate(a.last_message_time);
+                const bTime = convertFirestoreDate(b.last_message_time);
+                if (!aTime || !bTime) return 0;
+                return new Date(bTime).getTime() - new Date(aTime).getTime();
+              });
+          } else {
+            return [conversation, ...prev]
+              .sort((a, b) => {
+                const aTime = convertFirestoreDate(a.last_message_time);
+                const bTime = convertFirestoreDate(b.last_message_time);
+                if (!aTime || !bTime) return 0;
+                return new Date(bTime).getTime() - new Date(aTime).getTime();
+              });
+          }
+        });
+      };
+
+      const channelName = isAdmin ? 'admin-conversations' : `user-conversations-${user.id}`;
+      const channel = realtimeClient.subscribe(channelName, {
+        'conversation-updated': handleConversationUpdate,
+        'new-conversation': handleConversationUpdate
+      });
+
+      // Check connection status
+      const checkStatus = () => {
+        try {
+          const status = realtimeClient.getChannelStatus(channelName);
+          setIsConnected(status === 'joined');
+        } catch (error) {
+          console.warn('Failed to check conversations connection status:', error);
+          setIsConnected(false);
+        }
+      };
+
+      const interval = setInterval(checkStatus, 2000);
+
+      return () => {
+        clearInterval(interval);
+        try {
+          realtimeClient.unsubscribe(channelName);
+        } catch (error) {
+          console.warn('Failed to unsubscribe from conversations updates:', error);
+        }
+      };
+    } catch (error) {
+      console.warn('Failed to set up realtime conversations:', error);
+      setIsConnected(false);
+    }
+  }, [user?.id, isAdmin]);
+
+  // Calculate total unread messages
+  useEffect(() => {
+    const total = conversations.reduce((sum, conv) => {
+      return sum + (isAdmin ? conv.unread_count.admin : conv.unread_count.customer);
+    }, 0);
+    setTotalUnread(total);
+  }, [conversations, isAdmin]);
+
+  const updateConversation = useCallback((conversationId: string, updates: Partial<Conversation>) => {
+    setConversations(prev => prev.map(conv => 
+      conv.id === conversationId ? { ...conv, ...updates } : conv
+    ));
+  }, []);
+
+  const addConversation = useCallback((conversation: ConversationWithMessages) => {
+    setConversations(prev => [conversation, ...prev]
+      .sort((a, b) => {
+        const aTime = convertFirestoreDate(a.last_message_time);
+        const bTime = convertFirestoreDate(b.last_message_time);
+        if (!aTime || !bTime) return 0;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      })
+    );
+  }, []);
+
+  return { 
+    conversations, 
+    isConnected, 
+    totalUnread,
+    updateConversation,
+    addConversation,
+    setConversations 
   };
 }

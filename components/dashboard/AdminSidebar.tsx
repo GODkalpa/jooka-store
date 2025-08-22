@@ -13,6 +13,7 @@ import {
   LogOut,
   ExternalLink,
   X,
+  MessageCircle,
 } from 'lucide-react';
 
 const navigation = [
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Inventory', href: '/admin/inventory', icon: BarChart3 },
+  { name: 'Support', href: '/admin/support', icon: MessageCircle },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 

@@ -10,7 +10,7 @@ let adminDb: Firestore | undefined;
 /**
  * Initialize Firebase Admin SDK
  */
-function initializeFirebaseAdmin(): App {
+export function initializeAdmin(): App {
   if (adminApp) return adminApp;
 
   console.log('Initializing Firebase Admin SDK...');
@@ -41,7 +41,7 @@ function initializeFirebaseAdmin(): App {
     if (!serviceAccount && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
       serviceAccount = {
         type: "service_account",
-        project_id: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        project_id: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID,
         private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
         private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
         client_email: process.env.FIREBASE_CLIENT_EMAIL,
@@ -54,16 +54,20 @@ function initializeFirebaseAdmin(): App {
       console.log('Using individual service account fields from environment');
     }
 
-    if (serviceAccount) {
+    if (serviceAccount && serviceAccount.project_id) {
       adminApp = initializeApp({
         credential: cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        projectId: serviceAccount.project_id
       });
       console.log('Firebase Admin SDK initialized with service account');
     } else {
       // Fallback: Use default credentials (works in Firebase Functions or with gcloud auth)
+      const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
+      if (!projectId) {
+        throw new Error('No Firebase project ID found in environment variables');
+      }
       adminApp = initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        projectId: projectId
       });
       console.log('Firebase Admin SDK initialized with default credentials');
     }
@@ -81,7 +85,7 @@ function initializeFirebaseAdmin(): App {
 export function getAdminAuth(): Auth {
   if (adminAuth) return adminAuth;
 
-  const app = initializeFirebaseAdmin();
+  const app = initializeAdmin();
   adminAuth = getAuth(app);
   console.log('Firebase Admin Auth initialized');
   return adminAuth;
@@ -93,7 +97,7 @@ export function getAdminAuth(): Auth {
 export function getAdminDb(): Firestore {
   if (adminDb) return adminDb;
 
-  const app = initializeFirebaseAdmin();
+  const app = initializeAdmin();
   adminDb = getFirestore(app);
   console.log('Firebase Admin Firestore initialized');
   return adminDb;
@@ -237,5 +241,5 @@ export async function getUserData(userId: string): Promise<{ success: boolean; d
   }
 }
 
-// Export the admin app for other uses
+// Export the admin app for other uses if needed
 export { adminApp };
