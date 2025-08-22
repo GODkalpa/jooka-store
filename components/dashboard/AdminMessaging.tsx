@@ -220,9 +220,13 @@ export default function AdminMessaging({ className = '' }: AdminMessagingProps) 
 
   return (
     <div className={`bg-charcoal rounded-lg border border-gold/20 ${className}`}>
-      <div className="flex h-[700px]">
+      <div className="flex h-[600px] md:h-[700px] relative">
         {/* Conversations List */}
-        <div className="w-1/3 border-r border-gold/20 flex flex-col">
+        <div className={`${
+          selectedConversation 
+            ? 'hidden md:flex md:w-1/3 lg:w-1/4' 
+            : 'flex w-full md:w-1/3 lg:w-1/4'
+        } border-r border-gold/20 flex-col absolute md:relative h-full bg-charcoal md:bg-transparent z-10 md:z-auto`}>
           <div className="p-4 border-b border-gold/20">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gold flex items-center">
@@ -249,12 +253,12 @@ export default function AdminMessaging({ className = '' }: AdminMessagingProps) 
             </div>
             
             {/* Filter */}
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2">
               {['all', 'open', 'in-progress', 'closed'].map(status => (
                 <button
                   key={status}
                   onClick={() => setFilter(status)}
-                  className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                  className={`px-3 py-2 text-xs rounded-full transition-colors min-h-[36px] ${
                     filter === status
                       ? 'bg-gold text-black'
                       : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
@@ -278,7 +282,7 @@ export default function AdminMessaging({ className = '' }: AdminMessagingProps) 
                 <div
                   key={conversation.id}
                   onClick={() => setSelectedConversation(conversation.id)}
-                  className={`p-4 border-b border-gold/10 cursor-pointer hover:bg-gold/5 transition-colors ${
+                  className={`p-4 border-b border-gold/10 cursor-pointer hover:bg-gold/5 transition-colors min-h-[80px] md:min-h-auto ${
                     selectedConversation === conversation.id ? 'bg-gold/10' : ''
                   }`}
                 >
@@ -325,20 +329,35 @@ export default function AdminMessaging({ className = '' }: AdminMessagingProps) 
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 flex flex-col">
+        <div className={`${
+          selectedConversation 
+            ? 'flex w-full md:flex-1' 
+            : 'hidden md:flex md:flex-1'
+        } flex-col absolute md:relative h-full bg-charcoal md:bg-transparent z-20 md:z-auto`}>
           {selectedConversation ? (
             <>
               {/* Messages Header */}
-              <div className="p-4 border-b border-gold/20">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-white">
-                      {conversations.find(c => c.id === selectedConversation)?.subject}
-                    </h3>
-                    <div className="flex items-center space-x-4 text-sm text-gray-400 mt-1">
-                      <span>
-                        Customer: {conversations.find(c => c.id === selectedConversation)?.customer_email}
-                      </span>
+              <div className="p-3 md:p-4 border-b border-gold/20">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <button
+                        onClick={() => setSelectedConversation(null)}
+                        className="md:hidden text-gray-400 hover:text-white p-1"
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </button>
+                      <h3 className="font-semibold text-white truncate">
+                        {conversations.find(c => c.id === selectedConversation)?.subject}
+                      </h3>
+                    </div>
+                    <div className="hidden md:flex md:items-center md:space-x-4 text-sm text-gray-400">
+                      <div className="flex items-center space-x-1">
+                        <User className="w-4 h-4" />
+                        <span className="truncate">
+                          Customer: {conversations.find(c => c.id === selectedConversation)?.customer_email}
+                        </span>
+                      </div>
                       <span>•</span>
                       <span className={getStatusColor(conversations.find(c => c.id === selectedConversation)?.status || '')}>
                         {conversations.find(c => c.id === selectedConversation)?.status}
@@ -348,14 +367,31 @@ export default function AdminMessaging({ className = '' }: AdminMessagingProps) 
                         {conversations.find(c => c.id === selectedConversation)?.priority} priority
                       </span>
                     </div>
+                    <div className="md:hidden flex flex-col space-y-1 text-xs text-gray-400">
+                      <div className="flex items-center space-x-1">
+                        <User className="w-3 h-3" />
+                        <span className="truncate">
+                          {conversations.find(c => c.id === selectedConversation)?.customer_email}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className={getStatusColor(conversations.find(c => c.id === selectedConversation)?.status || '')}>
+                          {conversations.find(c => c.id === selectedConversation)?.status}
+                        </span>
+                        <span>•</span>
+                        <span className={getPriorityColor(conversations.find(c => c.id === selectedConversation)?.priority || '')}>
+                          {conversations.find(c => c.id === selectedConversation)?.priority}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                   
                   {/* Conversation Actions */}
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1 md:space-x-2 ml-2">
                     {conversations.find(c => c.id === selectedConversation)?.admin_id !== user?.id && (
                       <button
                         onClick={() => assignToMe(selectedConversation)}
-                        className="flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
+                        className="hidden md:flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
                       >
                         <UserCheck className="w-4 h-4 mr-1" />
                         Assign to Me
@@ -365,41 +401,51 @@ export default function AdminMessaging({ className = '' }: AdminMessagingProps) 
                     {conversations.find(c => c.id === selectedConversation)?.status !== 'closed' && (
                       <button
                         onClick={() => closeConversation(selectedConversation)}
-                        className="flex items-center px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded transition-colors"
+                        className="hidden md:flex items-center px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded transition-colors"
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Close
                       </button>
                     )}
                     
-                    <button
-                      onClick={() => setSelectedConversation(null)}
-                      className="sm:hidden text-gray-400 hover:text-white"
-                    >
-                      <ArrowLeft className="w-5 h-5" />
-                    </button>
+                    {/* Mobile Actions Menu */}
+                    <div className="md:hidden relative">
+                      <button className="p-2 text-gray-400 hover:text-white">
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      {/* You can add a dropdown menu here if needed */}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
                 {messages.map(message => (
                   <div
                     key={message.id}
                     className={`flex ${message.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    <div className={`max-w-[280px] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 md:py-3 rounded-lg ${
                       message.sender_type === 'admin'
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-700 text-white'
                     }`}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs opacity-70">
-                          {message.sender_type === 'admin' ? 'Admin' : 'Customer'}
-                        </span>
+                        <div className="flex items-center space-x-1">
+                          {message.sender_type === 'admin' ? (
+                            <UserCheck className="w-3 h-3 opacity-70" />
+                          ) : (
+                            <User className="w-3 h-3 opacity-70" />
+                          )}
+                          <span className="text-xs opacity-70 font-medium">
+                            {message.sender_type === 'admin' ? 'You (Admin)' : (
+                              conversations.find(c => c.id === selectedConversation)?.customer_email || 'Customer'
+                            )}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm leading-relaxed">{message.content}</p>
                       <div className="flex items-center justify-between mt-2 text-xs opacity-70">
                         <span>{formatMessageTime(message.created_at)}</span>
                         {message.sender_type === 'admin' && (
@@ -413,21 +459,21 @@ export default function AdminMessaging({ className = '' }: AdminMessagingProps) 
               </div>
 
               {/* Message Input */}
-              <div className="p-4 border-t border-gold/20">
+              <div className="p-3 md:p-4 border-t border-gold/20">
                 <div className="flex space-x-2">
                   <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type your response..."
-                    className="flex-1 bg-black border border-gold/20 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-gold resize-none"
+                    className="flex-1 bg-black border border-gold/20 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-gold resize-none min-h-[44px]"
                     rows={2}
                     disabled={isLoading || conversations.find(c => c.id === selectedConversation)?.status === 'closed'}
                   />
                   <button
                     onClick={sendMessage}
                     disabled={!newMessage.trim() || isLoading || conversations.find(c => c.id === selectedConversation)?.status === 'closed'}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-blue-600 text-white px-3 md:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px] flex items-center justify-center"
                   >
                     <Send className="w-4 h-4" />
                   </button>
@@ -438,11 +484,11 @@ export default function AdminMessaging({ className = '' }: AdminMessagingProps) 
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-center">
+            <div className="flex-1 flex items-center justify-center text-center p-4">
               <div>
-                <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-400 opacity-50" />
-                <h3 className="text-lg font-medium text-gray-400 mb-2">Select a conversation</h3>
-                <p className="text-gray-500">Choose a conversation from the list to start responding to customers</p>
+                <MessageCircle className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-gray-400 opacity-50" />
+                <h3 className="text-base md:text-lg font-medium text-gray-400 mb-2">Select a conversation</h3>
+                <p className="text-sm md:text-base text-gray-500 max-w-sm mx-auto">Choose a conversation from the list to start responding to customers</p>
               </div>
             </div>
           )}

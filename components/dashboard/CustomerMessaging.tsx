@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send, Clock, CheckCircle2, User, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Send, Clock, CheckCircle2, User, ArrowLeft, UserCheck } from 'lucide-react';
 import { useAuth } from '@/lib/auth/firebase-auth';
 import { useMessagingRealtime, useConversationsRealtime } from '@/lib/realtime/hooks';
 import { 
@@ -251,9 +251,13 @@ export default function CustomerMessaging({ className = '' }: CustomerMessagingP
 
   return (
     <div className={`bg-charcoal rounded-lg border border-gold/20 ${className}`}>
-      <div className="flex h-[600px]">
+      <div className="flex h-[500px] md:h-[600px] relative">
         {/* Conversations List */}
-        <div className="w-1/3 border-r border-gold/20 flex flex-col">
+        <div className={`${
+          selectedConversation 
+            ? 'hidden md:flex md:w-1/3 lg:w-1/4' 
+            : 'flex w-full md:w-1/3 lg:w-1/4'
+        } border-r border-gold/20 flex-col absolute md:relative h-full bg-charcoal md:bg-transparent z-10 md:z-auto`}>
           <div className="p-4 border-b border-gold/20">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gold flex items-center">
@@ -265,20 +269,20 @@ export default function CustomerMessaging({ className = '' }: CustomerMessagingP
                   </span>
                 )}
               </h3>
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => {
                     setSelectedConversation(null);
                     setMessages([]);
                     loadConversations();
                   }}
-                  className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition-colors"
+                  className="bg-purple-600 text-white px-3 py-2 rounded text-sm hover:bg-purple-700 transition-colors min-h-[36px]"
                 >
                   Refresh
                 </button>
                 <button
                   onClick={() => setShowNewConversation(true)}
-                  className="bg-gold text-black px-3 py-1 rounded text-sm hover:bg-gold/90 transition-colors"
+                  className="bg-gold text-black px-3 py-2 rounded text-sm hover:bg-gold/90 transition-colors min-h-[36px]"
                 >
                   New
                 </button>
@@ -298,7 +302,7 @@ export default function CustomerMessaging({ className = '' }: CustomerMessagingP
                 <div
                   key={conversation.id}
                   onClick={() => setSelectedConversation(conversation.id)}
-                  className={`p-4 border-b border-gold/10 cursor-pointer hover:bg-gold/5 transition-colors ${
+                  className={`p-4 border-b border-gold/10 cursor-pointer hover:bg-gold/5 transition-colors min-h-[80px] md:min-h-auto ${
                     selectedConversation === conversation.id ? 'bg-gold/10' : ''
                   }`}
                 >
@@ -333,44 +337,68 @@ export default function CustomerMessaging({ className = '' }: CustomerMessagingP
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 flex flex-col">
+        <div className={`${
+          selectedConversation 
+            ? 'flex w-full md:flex-1' 
+            : 'hidden md:flex md:flex-1'
+        } flex-col absolute md:relative h-full bg-charcoal md:bg-transparent z-20 md:z-auto`}>
           {selectedConversation ? (
             <>
               {/* Messages Header */}
-              <div className="p-4 border-b border-gold/20">
+              <div className="p-3 md:p-4 border-b border-gold/20">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-white">
-                      {conversations.find(c => c.id === selectedConversation)?.subject}
-                    </h3>
-                    <p className="text-sm text-gray-400">
-                      Status: <span className={getStatusColor(conversations.find(c => c.id === selectedConversation)?.status || '')}>
-                        {conversations.find(c => c.id === selectedConversation)?.status}
-                      </span>
-                    </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <button
+                        onClick={() => setSelectedConversation(null)}
+                        className="md:hidden text-gray-400 hover:text-white p-1"
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </button>
+                      <h3 className="font-semibold text-white truncate">
+                        {conversations.find(c => c.id === selectedConversation)?.subject}
+                      </h3>
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      <div className="flex items-center space-x-2">
+                        <UserCheck className="w-4 h-4" />
+                        <span>Chatting with Support Team</span>
+                      </div>
+                      <div className="mt-1">
+                        Status: <span className={getStatusColor(conversations.find(c => c.id === selectedConversation)?.status || '')}>
+                          {conversations.find(c => c.id === selectedConversation)?.status}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => setSelectedConversation(null)}
-                    className="sm:hidden text-gray-400 hover:text-white"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
                 </div>
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
                 {messages.map(message => (
                   <div
                     key={message.id}
                     className={`flex ${message.sender_type === 'customer' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    <div className={`max-w-[280px] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 md:py-3 rounded-lg ${
                       message.sender_type === 'customer'
                         ? 'bg-gold text-black'
                         : 'bg-gray-700 text-white'
                     }`}>
-                      <p className="text-sm">{message.content}</p>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center space-x-1">
+                          {message.sender_type === 'customer' ? (
+                            <User className="w-3 h-3 opacity-70" />
+                          ) : (
+                            <UserCheck className="w-3 h-3 opacity-70" />
+                          )}
+                          <span className="text-xs opacity-70 font-medium">
+                            {message.sender_type === 'customer' ? 'You' : 'Support'}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-sm leading-relaxed">{message.content}</p>
                       <div className="flex items-center justify-between mt-2 text-xs opacity-70">
                         <span>{formatMessageTime(message.created_at)}</span>
                         {message.sender_type === 'customer' && (
@@ -384,21 +412,21 @@ export default function CustomerMessaging({ className = '' }: CustomerMessagingP
               </div>
 
               {/* Message Input */}
-              <div className="p-4 border-t border-gold/20">
+              <div className="p-3 md:p-4 border-t border-gold/20">
                 <div className="flex space-x-2">
                   <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type your message..."
-                    className="flex-1 bg-black border border-gold/20 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-gold resize-none"
+                    className="flex-1 bg-black border border-gold/20 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-gold resize-none min-h-[44px]"
                     rows={2}
                     disabled={isLoading}
                   />
                   <button
                     onClick={sendMessage}
                     disabled={!newMessage.trim() || isLoading}
-                    className="bg-gold text-black px-4 py-2 rounded-lg hover:bg-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gold text-black px-3 md:px-4 py-2 rounded-lg hover:bg-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px] flex items-center justify-center"
                   >
                     <Send className="w-4 h-4" />
                   </button>
@@ -406,11 +434,11 @@ export default function CustomerMessaging({ className = '' }: CustomerMessagingP
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-center">
+            <div className="flex-1 flex items-center justify-center text-center p-4">
               <div>
-                <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-400 opacity-50" />
-                <h3 className="text-lg font-medium text-gray-400 mb-2">Select a conversation</h3>
-                <p className="text-gray-500">Choose a conversation from the list to start messaging</p>
+                <MessageCircle className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-gray-400 opacity-50" />
+                <h3 className="text-base md:text-lg font-medium text-gray-400 mb-2">Select a conversation</h3>
+                <p className="text-sm md:text-base text-gray-500 max-w-sm mx-auto">Choose a conversation from the list to start messaging</p>
               </div>
             </div>
           )}
@@ -443,12 +471,12 @@ function NewConversationForm({ onSubmit, onCancel, isLoading }: NewConversationF
   };
 
   return (
-    <div className="bg-charcoal rounded-lg border border-gold/20 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-gold">Start New Conversation</h3>
+    <div className="bg-charcoal rounded-lg border border-gold/20 p-4 md:p-6 h-full overflow-y-auto">
+      <div className="flex items-center justify-between mb-4 md:mb-6">
+        <h3 className="text-lg md:text-xl font-semibold text-gold">Start New Conversation</h3>
         <button
           onClick={onCancel}
-          className="text-gray-400 hover:text-white"
+          className="text-gray-400 hover:text-white p-1"
           disabled={isLoading}
         >
           <ArrowLeft className="w-5 h-5" />
@@ -464,14 +492,14 @@ function NewConversationForm({ onSubmit, onCancel, isLoading }: NewConversationF
             type="text"
             value={formData.subject}
             onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-            className="w-full px-3 py-2 bg-black border border-gold/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold"
+            className="w-full px-3 py-2 bg-black border border-gold/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold min-h-[44px]"
             placeholder="What can we help you with?"
             required
             disabled={isLoading}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Category
@@ -479,7 +507,7 @@ function NewConversationForm({ onSubmit, onCancel, isLoading }: NewConversationF
             <select
               value={formData.category}
               onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as any }))}
-              className="w-full px-3 py-2 bg-black border border-gold/20 rounded-lg text-white focus:outline-none focus:border-gold"
+              className="w-full px-3 py-2 bg-black border border-gold/20 rounded-lg text-white focus:outline-none focus:border-gold min-h-[44px]"
               disabled={isLoading}
             >
               <option value="general">General Question</option>
@@ -496,7 +524,7 @@ function NewConversationForm({ onSubmit, onCancel, isLoading }: NewConversationF
             <select
               value={formData.priority}
               onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as any }))}
-              className="w-full px-3 py-2 bg-black border border-gold/20 rounded-lg text-white focus:outline-none focus:border-gold"
+              className="w-full px-3 py-2 bg-black border border-gold/20 rounded-lg text-white focus:outline-none focus:border-gold min-h-[44px]"
               disabled={isLoading}
             >
               <option value="low">Low</option>
@@ -513,7 +541,7 @@ function NewConversationForm({ onSubmit, onCancel, isLoading }: NewConversationF
           <textarea
             value={formData.initial_message}
             onChange={(e) => setFormData(prev => ({ ...prev, initial_message: e.target.value }))}
-            className="w-full px-3 py-2 bg-black border border-gold/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold"
+            className="w-full px-3 py-2 bg-black border border-gold/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold min-h-[100px]"
             placeholder="Please describe your question or issue in detail..."
             rows={4}
             required
@@ -521,11 +549,11 @@ function NewConversationForm({ onSubmit, onCancel, isLoading }: NewConversationF
           />
         </div>
 
-        <div className="flex space-x-3 pt-4">
+        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3 pt-4">
           <button
             type="submit"
             disabled={!formData.subject.trim() || !formData.initial_message.trim() || isLoading}
-            className="bg-gold text-black px-6 py-2 rounded-lg hover:bg-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+            className="bg-gold text-black px-6 py-3 rounded-lg hover:bg-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1 min-h-[44px]"
           >
             {isLoading ? 'Creating...' : 'Start Conversation'}
           </button>
@@ -533,7 +561,7 @@ function NewConversationForm({ onSubmit, onCancel, isLoading }: NewConversationF
             type="button"
             onClick={onCancel}
             disabled={isLoading}
-            className="border border-gold/20 text-gold px-6 py-2 rounded-lg hover:bg-gold/10 transition-colors"
+            className="border border-gold/20 text-gold px-6 py-3 rounded-lg hover:bg-gold/10 transition-colors min-h-[44px]"
           >
             Cancel
           </button>
