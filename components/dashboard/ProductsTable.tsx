@@ -186,7 +186,7 @@ export default function ProductsTable({ products, onProductUpdate }: ProductsTab
                       {/* Actions - positioned at top right */}
                       <div className="flex-shrink-0 self-start">
                         <TableRowActions
-                          viewHref={`/product/${product.slug}`}
+                          viewHref={`/product/${product.id}`}
                           editHref={`/admin/products/${product.id}/edit`}
                           onToggleFeatured={() => handleFeaturedToggle(product.id, product.featured)}
                           onToggleStatus={() => handleStatusChange(
@@ -350,7 +350,7 @@ export default function ProductsTable({ products, onProductUpdate }: ProductsTab
                   </td>
                   <td className="px-6 py-4">
                     <TableRowActions
-                      viewHref={`/product/${product.slug}`}
+                      viewHref={`/product/${product.id}`}
                       editHref={`/admin/products/${product.id}/edit`}
                       onToggleFeatured={() => handleFeaturedToggle(product.id, product.featured)}
                       onToggleStatus={() => handleStatusChange(
