@@ -511,30 +511,30 @@ export default function EditProductPage() {
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col gap-4 mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0">
+        <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3 sm:gap-4">
+            <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-3 sm:gap-4 min-w-0">
               <Link
                 href="/admin/products"
-                className="flex items-center gap-2 text-gray-400 hover:text-gold transition-colors text-sm sm:text-base whitespace-nowrap"
+                className="flex items-center gap-1.5 xs:gap-2 text-gray-400 hover:text-gold transition-colors text-xs xs:text-sm sm:text-base whitespace-nowrap"
               >
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <ArrowLeft className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                 <span className="hidden xs:inline">Back to Products</span>
                 <span className="xs:hidden">Back</span>
               </Link>
-              <div className="hidden sm:block h-6 w-px bg-gold/30" />
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold truncate">
+              <div className="hidden xs:block h-4 sm:h-6 w-px bg-gold/30" />
+              <h1 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold text-gold truncate">
                 Edit Product
               </h1>
             </div>
             {product && (
-              <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-2 xs:gap-3 w-full xs:w-auto">
                 <Link
                   href={`/product/${product?.slug}`}
                   target="_blank"
-                  className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-charcoal border border-gold/20 text-gray-300 hover:text-white hover:border-gold/40 rounded-lg transition-colors text-sm sm:text-base w-full sm:w-auto justify-center sm:justify-start"
+                  className="flex items-center gap-1.5 xs:gap-2 px-2.5 xs:px-3 py-1.5 xs:py-2 sm:px-4 sm:py-2 bg-charcoal border border-gold/20 text-gray-300 hover:text-white hover:border-gold/40 rounded-md xs:rounded-lg transition-colors text-xs xs:text-sm sm:text-base w-full xs:w-auto justify-center xs:justify-start"
                 >
-                  <Eye className="w-4 h-4 flex-shrink-0" />
+                  <Eye className="w-3.5 h-3.5 xs:w-4 xs:h-4 flex-shrink-0" />
                   <span>View Product</span>
                 </Link>
               </div>
@@ -543,18 +543,18 @@ export default function EditProductPage() {
         </div>
 
         {/* Form */}
-        <div className="bg-charcoal rounded-lg border border-gold/20 p-4 sm:p-6 lg:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+        <div className="bg-charcoal rounded-md sm:rounded-lg border border-gold/20 p-3 xs:p-4 sm:p-6 lg:p-8">
+          <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-5 sm:space-y-6 md:space-y-8">
             {error && (
-              <div className="bg-red-900/20 border border-red-500 rounded-lg p-3 sm:p-4">
-                <p className="text-red-400 text-sm sm:text-base">{error}</p>
+              <div className="bg-red-900/20 border border-red-500 rounded-md sm:rounded-lg p-2.5 xs:p-3 sm:p-4">
+                <p className="text-red-400 text-xs xs:text-sm sm:text-base">{error}</p>
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 xs:gap-4 sm:gap-6 md:gap-8">
               {/* Product Name */}
-              <div className="lg:col-span-2">
-                <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">
+              <div className="md:col-span-2">
+                <label className="block text-xs xs:text-sm sm:text-base font-medium text-gray-300 mb-1.5 xs:mb-2">
                   Product Name *
                 </label>
                 <input
@@ -562,14 +562,14 @@ export default function EditProductPage() {
                   required
                   value={formData.name}
                   onChange={(e) => handleNameChange(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
+                  className="w-full px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-md sm:rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-xs xs:text-sm sm:text-base"
                   placeholder="Enter product name"
                 />
               </div>
 
               {/* Slug */}
-              <div className="lg:col-span-2">
-                <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">
+              <div className="md:col-span-2">
+                <label className="block text-xs xs:text-sm sm:text-base font-medium text-gray-300 mb-1.5 xs:mb-2">
                   URL Slug *
                 </label>
                 <input
@@ -577,14 +577,14 @@ export default function EditProductPage() {
                   required
                   value={formData.slug}
                   onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
+                  className="w-full px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-md sm:rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-xs xs:text-sm sm:text-base"
                   placeholder="product-url-slug"
                 />
               </div>
 
               {/* Price */}
               <div>
-                <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">
+                <label className="block text-xs xs:text-sm sm:text-base font-medium text-gray-300 mb-1.5 xs:mb-2">
                   Price *
                 </label>
                 <input
@@ -594,14 +594,14 @@ export default function EditProductPage() {
                   required
                   value={formData.price}
                   onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
+                  className="w-full px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-md sm:rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-xs xs:text-sm sm:text-base"
                   placeholder="0.00"
                 />
               </div>
 
               {/* Compare Price */}
               <div>
-                <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">
+                <label className="block text-xs xs:text-sm sm:text-base font-medium text-gray-300 mb-1.5 xs:mb-2">
                   Compare Price
                 </label>
                 <input
@@ -610,7 +610,7 @@ export default function EditProductPage() {
                   min="0"
                   value={formData.comparePrice}
                   onChange={(e) => setFormData(prev => ({ ...prev, comparePrice: e.target.value }))}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
+                  className="w-full px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-md sm:rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-xs xs:text-sm sm:text-base"
                   placeholder="0.00"
                 />
               </div>
@@ -618,7 +618,7 @@ export default function EditProductPage() {
               {/* Inventory Count */}
               {!formData.trackVariants ? (
                 <div>
-                  <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">
+                  <label className="block text-xs xs:text-sm sm:text-base font-medium text-gray-300 mb-1.5 xs:mb-2">
                     Total Inventory Count
                   </label>
                   <input
@@ -626,22 +626,22 @@ export default function EditProductPage() {
                     min="0"
                     value={formData.inventoryCount}
                     onChange={(e) => setFormData(prev => ({ ...prev, inventoryCount: e.target.value }))}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
+                    className="w-full px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-md sm:rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-xs xs:text-sm sm:text-base"
                     placeholder="0"
                   />
                 </div>
               ) : (
-                <div className="lg:col-span-2">
-                  <div className="bg-gradient-to-br from-charcoal/40 to-charcoal/20 rounded-xl border border-gold/20 p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 bg-gradient-to-br from-gold/30 to-gold/10 rounded-lg flex items-center justify-center">
-                        <svg className="w-4 h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="md:col-span-2">
+                  <div className="bg-gradient-to-br from-charcoal/40 to-charcoal/20 rounded-lg xs:rounded-xl border border-gold/20 p-3 xs:p-4 sm:p-6">
+                    <div className="flex items-center gap-2 xs:gap-3 mb-3 xs:mb-4">
+                      <div className="w-6 h-6 xs:w-8 xs:h-8 bg-gradient-to-br from-gold/30 to-gold/10 rounded-md xs:rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg className="w-3 h-3 xs:w-4 xs:h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
                       </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">Variant Inventory Management</h3>
-                        <p className="text-sm text-gray-400">Set individual inventory levels for each color/size combination</p>
+                      <div className="min-w-0">
+                        <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-white">Variant Inventory Management</h3>
+                        <p className="text-xs xs:text-sm text-gray-400">Set individual inventory levels for each color/size combination</p>
                       </div>
                     </div>
                     
@@ -653,11 +653,11 @@ export default function EditProductPage() {
                         onChange={setVariantInventory}
                       />
                     ) : (
-                      <div className="text-center py-8 text-gray-400">
-                        <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="text-center py-4 xs:py-6 sm:py-8 text-gray-400">
+                        <svg className="w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 mx-auto mb-2 xs:mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
-                        <p className="text-sm">Add colors and sizes above to configure variant inventory</p>
+                        <p className="text-xs xs:text-sm">Add colors and sizes above to configure variant inventory</p>
                       </div>
                     )}
                   </div>
@@ -665,32 +665,32 @@ export default function EditProductPage() {
               )}
 
               {/* Variant Tracking Toggle */}
-              <div className="lg:col-span-2">
-                <div className="bg-gradient-to-r from-charcoal/40 to-charcoal/20 rounded-xl border border-gold/20 p-6">
-                  <label className="flex items-start gap-4 cursor-pointer group">
-                    <div className="relative flex-shrink-0 mt-1">
+              <div className="md:col-span-2">
+                <div className="bg-gradient-to-r from-charcoal/40 to-charcoal/20 rounded-lg xs:rounded-xl border border-gold/20 p-3 xs:p-4 sm:p-6">
+                  <label className="flex items-start gap-3 xs:gap-4 cursor-pointer group">
+                    <div className="relative flex-shrink-0 mt-0.5 xs:mt-1">
                       <input
                         type="checkbox"
                         checked={formData.trackVariants}
                         onChange={(e) => setFormData(prev => ({ ...prev, trackVariants: e.target.checked }))}
                         className="sr-only"
                       />
-                      <div className={`w-5 h-5 rounded border-2 transition-all duration-200 ${
+                      <div className={`w-4 h-4 xs:w-5 xs:h-5 rounded border-2 transition-all duration-200 ${
                         formData.trackVariants
                           ? 'bg-gold border-gold'
                           : 'bg-black border-gold/30 group-hover:border-gold/50'
                       }`}>
                         {formData.trackVariants && (
-                          <svg className="w-3 h-3 text-black absolute top-0.5 left-0.5" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-2.5 h-2.5 xs:w-3 xs:h-3 text-black absolute top-0.5 left-0.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         )}
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-white">Track Variant-Level Inventory</span>
-                        <div className="px-2 py-0.5 bg-gold/20 text-gold text-xs rounded-full font-medium">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2">
+                        <span className="text-xs xs:text-sm font-medium text-white">Track Variant-Level Inventory</span>
+                        <div className="px-1.5 xs:px-2 py-0.5 bg-gold/20 text-gold text-xs rounded-full font-medium self-start">
                           RECOMMENDED
                         </div>
                       </div>
@@ -705,13 +705,13 @@ export default function EditProductPage() {
 
               {/* Status */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-xs xs:text-sm sm:text-base font-medium text-gray-300 mb-1.5 xs:mb-2">
                   Status
                 </label>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                  className="w-full px-4 py-3 bg-black/50 border border-gold/30 rounded-lg text-white focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all"
+                  className="w-full px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-md sm:rounded-lg text-white focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-xs xs:text-sm sm:text-base"
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
@@ -720,35 +720,35 @@ export default function EditProductPage() {
               </div>
 
               {/* Short Description */}
-              <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+              <div className="md:col-span-2">
+                <label className="block text-xs xs:text-sm sm:text-base font-medium text-gray-300 mb-1.5 xs:mb-2">
                   Short Description
                 </label>
                 <textarea
                   rows={2}
                   value={formData.shortDescription}
                   onChange={(e) => setFormData(prev => ({ ...prev, shortDescription: e.target.value }))}
-                  className="w-full px-4 py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all resize-none"
+                  className="w-full px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-md sm:rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all resize-none text-xs xs:text-sm sm:text-base"
                   placeholder="Brief product description"
                 />
               </div>
 
               {/* Description */}
-              <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+              <div className="md:col-span-2">
+                <label className="block text-xs xs:text-sm sm:text-base font-medium text-gray-300 mb-1.5 xs:mb-2">
                   Description
                 </label>
                 <textarea
-                  rows={4}
+                  rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-4 py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all resize-none"
+                  className="w-full px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-md sm:rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all resize-none text-xs xs:text-sm sm:text-base"
                   placeholder="Detailed product description"
                 />
               </div>
 
               {/* Enhanced Color-Specific Image Management */}
-              <div className="lg:col-span-2">
+              <div className="md:col-span-2">
                 <ColorImageManager
                   images={images}
                   colors={colors}
@@ -759,23 +759,23 @@ export default function EditProductPage() {
               </div>
 
               {/* Product Variants */}
-              <div className="lg:col-span-2">
-                <div className="bg-gradient-to-br from-charcoal/40 to-charcoal/20 rounded-xl border border-gold/20 p-8">
-                  <div className="flex items-center gap-4 mb-8">
-                    <div className="w-10 h-10 bg-gradient-to-br from-gold/30 to-gold/10 rounded-xl flex items-center justify-center">
-                      <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="md:col-span-2">
+                <div className="bg-gradient-to-br from-charcoal/40 to-charcoal/20 rounded-lg xs:rounded-xl border border-gold/20 p-4 xs:p-6 sm:p-8">
+                  <div className="flex items-center gap-3 xs:gap-4 mb-4 xs:mb-6 sm:mb-8">
+                    <div className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-gold/30 to-gold/10 rounded-lg xs:rounded-xl flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 xs:w-4.5 xs:h-4.5 sm:w-5 sm:h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a4 4 0 004-4V5z" />
                       </svg>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-white">Product Variants</h3>
-                      <p className="text-gray-400">Configure available colors and sizes for this product</p>
+                    <div className="min-w-0">
+                      <h3 className="text-base xs:text-lg sm:text-xl font-semibold text-white">Product Variants</h3>
+                      <p className="text-xs xs:text-sm sm:text-base text-gray-400">Configure available colors and sizes for this product</p>
                     </div>
                   </div>
 
-                  <div className="space-y-8">
+                  <div className="space-y-4 xs:space-y-6 sm:space-y-8">
                     {/* Colors */}
-                    <div className="bg-black/20 rounded-lg p-6 border border-gold/10">
+                    <div className="bg-black/20 rounded-md xs:rounded-lg p-3 xs:p-4 sm:p-6 border border-gold/10">
                       <ColorSelector
                         colors={colors}
                         onChange={handleColorsChange}
@@ -784,7 +784,7 @@ export default function EditProductPage() {
                     </div>
 
                     {/* Sizes */}
-                    <div className="bg-black/20 rounded-lg p-6 border border-gold/10">
+                    <div className="bg-black/20 rounded-md xs:rounded-lg p-3 xs:p-4 sm:p-6 border border-gold/10">
                       <SizeSelector
                         sizes={sizes}
                         onChange={handleSizesChange}
@@ -796,30 +796,30 @@ export default function EditProductPage() {
               </div>
 
               {/* Featured Product */}
-              <div className="lg:col-span-2">
-                <div className="bg-gradient-to-r from-charcoal/40 to-charcoal/20 rounded-xl border border-gold/20 p-6">
-                  <label className="flex items-start gap-4 cursor-pointer group">
-                    <div className="relative flex-shrink-0 mt-1">
+              <div className="md:col-span-2">
+                <div className="bg-gradient-to-r from-charcoal/40 to-charcoal/20 rounded-lg xs:rounded-xl border border-gold/20 p-3 xs:p-4 sm:p-6">
+                  <label className="flex items-start gap-3 xs:gap-4 cursor-pointer group">
+                    <div className="relative flex-shrink-0 mt-0.5 xs:mt-1">
                       <input
                         type="checkbox"
                         checked={formData.featured}
                         onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
                         className="sr-only"
                       />
-                      <div className={`w-5 h-5 rounded border-2 transition-all duration-200 ${
+                      <div className={`w-4 h-4 xs:w-5 xs:h-5 rounded border-2 transition-all duration-200 ${
                         formData.featured
                           ? 'bg-gold border-gold'
                           : 'bg-black border-gold/30 group-hover:border-gold/50'
                       }`}>
                         {formData.featured && (
-                          <Star className="w-3 h-3 text-black absolute top-0.5 left-0.5" fill="currentColor" />
+                          <Star className="w-2.5 h-2.5 xs:w-3 xs:h-3 text-black absolute top-0.5 left-0.5" fill="currentColor" />
                         )}
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-white">Featured Product</span>
-                        <div className="px-2 py-0.5 bg-gold/20 text-gold text-xs rounded-full font-medium">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2">
+                        <span className="text-xs xs:text-sm font-medium text-white">Featured Product</span>
+                        <div className="px-1.5 xs:px-2 py-0.5 bg-gold/20 text-gold text-xs rounded-full font-medium self-start">
                           PREMIUM
                         </div>
                       </div>
@@ -833,26 +833,26 @@ export default function EditProductPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-gold/30">
+            <div className="flex flex-col xs:flex-row items-stretch xs:items-center justify-end gap-2 xs:gap-3 sm:gap-4 pt-4 xs:pt-5 sm:pt-6 md:pt-8 mt-4 xs:mt-5 sm:mt-6 md:mt-8 border-t border-gold/30">
               <Link
                 href="/admin/products"
-                className="px-6 sm:px-8 py-2.5 sm:py-3 text-gray-300 hover:text-white hover:bg-charcoal/50 rounded-lg sm:rounded-xl transition-all duration-200 font-medium order-2 sm:order-1 border border-gray-600 hover:border-gray-500 text-center text-sm sm:text-base"
+                className="px-4 xs:px-5 sm:px-6 md:px-8 py-2 xs:py-2.5 sm:py-3 text-gray-300 hover:text-white hover:bg-charcoal/50 rounded-md xs:rounded-lg sm:rounded-xl transition-all duration-200 font-medium order-2 xs:order-1 border border-gray-600 hover:border-gray-500 text-center text-xs xs:text-sm sm:text-base"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={saving}
-                className="relative px-8 sm:px-10 py-2.5 sm:py-3 bg-gradient-to-r from-gold to-gold/90 text-black rounded-lg sm:rounded-xl font-semibold hover:from-gold/90 hover:to-gold/80 focus:outline-none focus:ring-2 focus:ring-gold/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3 transition-all duration-200 order-1 sm:order-2 min-w-[160px] sm:min-w-[180px] shadow-lg text-sm sm:text-base"
+                className="relative px-6 xs:px-7 sm:px-8 md:px-10 py-2 xs:py-2.5 sm:py-3 bg-gradient-to-r from-gold to-gold/90 text-black rounded-md xs:rounded-lg sm:rounded-xl font-semibold hover:from-gold/90 hover:to-gold/80 focus:outline-none focus:ring-2 focus:ring-gold/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 xs:gap-2 sm:gap-3 transition-all duration-200 order-1 xs:order-2 min-w-[120px] xs:min-w-[140px] sm:min-w-[160px] md:min-w-[180px] shadow-lg text-xs xs:text-sm sm:text-base"
               >
                 {saving ? (
                   <>
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                    <div className="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
                     <span>Updating...</span>
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Save className="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5" />
                     <span>Update Product</span>
                   </>
                 )}
