@@ -39,19 +39,86 @@ export default function ActionButtonGroup({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Calculate dropdown position
+  // Calculate dropdown position relative to the specific button
   const updateDropdownPosition = () => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const scrollY = window.scrollY;
-      const scrollX = window.scrollX;
-
-      setDropdownPosition({
-        top: rect.bottom + scrollY + 4, // 4px gap (mt-1)
-        left: dropdownAlign === 'left' ? rect.left + scrollX : 0,
-        right: dropdownAlign === 'right' ? window.innerWidth - rect.right - scrollX : 0
-      });
+    if (!buttonRef.current) return;
+    
+    const rect = buttonRef.current.getBoundingClientRect();
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    
+    // Dropdown dimensions - responsive sizing
+    const isMobile = viewportWidth < 640;
+    const dropdownWidth = isMobile ? Math.min(viewportWidth - 32, 240) : 192; // Responsive width with margins
+    const itemHeight = isMobile ? 48 : 44; // Larger touch targets on mobile
+    const estimatedDropdownHeight = Math.min(overflowActions.length * itemHeight + 16, isMobile ? 280 : 300);
+    
+    // Available space calculations
+    const spaceBelow = viewportHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const spaceRight = viewportWidth - rect.right;
+    const spaceLeft = rect.left;
+    
+    // Determine vertical position
+    let top;
+    
+    if (isMobile) {
+      // Mobile: prefer centering vertically with safe margins
+      const availableHeight = viewportHeight - 32; // 16px margin on top and bottom
+      const centeredTop = scrollY + (viewportHeight - estimatedDropdownHeight) / 2;
+      
+      if (spaceBelow < 120) {
+        // Limited space below - position above button
+        top = Math.max(scrollY + 16, rect.top + scrollY - estimatedDropdownHeight - 8);
+      } else {
+        // Enough space - position below button but ensure it fits
+        top = Math.min(centeredTop, rect.bottom + scrollY + 8);
+        if (top + estimatedDropdownHeight > scrollY + viewportHeight - 16) {
+          top = scrollY + viewportHeight - estimatedDropdownHeight - 16;
+        }
+      }
+    } else if (spaceBelow < estimatedDropdownHeight && spaceAbove > estimatedDropdownHeight) {
+      // Desktop: Open upward if more space above
+      top = rect.top + scrollY - estimatedDropdownHeight - 8;
+    } else {
+      // Desktop: Default open downward
+      top = rect.bottom + scrollY + 8;
+      if (top + estimatedDropdownHeight > scrollY + viewportHeight) {
+        top = scrollY + viewportHeight - estimatedDropdownHeight - 8;
+      }
     }
+    
+    // Determine horizontal position
+    let left = 0;
+    let right = 0;
+    
+    if (isMobile) {
+      // Mobile: Center horizontally with margins
+      const horizontalMargin = 16;
+      const availableWidth = viewportWidth - (2 * horizontalMargin);
+      const adjustedDropdownWidth = Math.min(dropdownWidth, availableWidth);
+      
+      left = scrollX + (viewportWidth - adjustedDropdownWidth) / 2;
+      left = Math.max(scrollX + horizontalMargin, left);
+      left = Math.min(scrollX + viewportWidth - adjustedDropdownWidth - horizontalMargin, left);
+    } else if (dropdownAlign === 'right') {
+      // Desktop: Align right edge of dropdown with right edge of button
+      right = viewportWidth - (rect.right + scrollX);
+      if (rect.right - dropdownWidth < 0) {
+        right = viewportWidth - dropdownWidth - 8;
+      }
+    } else {
+      // Desktop: Align left edge of dropdown with left edge of button  
+      left = rect.left + scrollX;
+      if (left + dropdownWidth > viewportWidth) {
+        left = viewportWidth - dropdownWidth - 8;
+      }
+      left = Math.max(8, left);
+    }
+
+    setDropdownPosition({ top, left, right });
   };
 
   // Close dropdown when clicking outside
@@ -69,20 +136,37 @@ export default function ActionButtonGroup({
     }
   }, [isDropdownOpen]);
 
-  // Update position on scroll/resize
+  // On mobile, show fewer primary actions if mobileCollapse is enabled
+  const isMobileView = typeof window !== 'undefined' && window.innerWidth < 640;
+  const mobileMaxPrimary = mobileCollapse ? 0 : maxPrimaryActions; // Hide all primary actions on mobile when mobileCollapse is true
+  const visiblePrimaryActions = primaryActions.slice(0, mobileCollapse && isMobileView ? mobileMaxPrimary : maxPrimaryActions);
+  const overflowActions = [
+    ...(mobileCollapse ? primaryActions.slice(mobileMaxPrimary) : primaryActions.slice(maxPrimaryActions)),
+    ...(secondaryActions.length > 0 && primaryActions.length > 0 ? [{ separator: true } as ActionItem] : []),
+    ...secondaryActions
+  ];
+
+  const hasDropdown = overflowActions.length > 0;
+
+  // Update position when dropdown opens and on scroll/resize
   useEffect(() => {
     if (isDropdownOpen) {
-      const handlePositionUpdate = () => updateDropdownPosition();
+      // Initial position update
+      updateDropdownPosition();
+      
+      const handlePositionUpdate = () => {
+        requestAnimationFrame(updateDropdownPosition);
+      };
 
-      window.addEventListener('scroll', handlePositionUpdate, true);
-      window.addEventListener('resize', handlePositionUpdate);
+      window.addEventListener('scroll', handlePositionUpdate, { passive: true, capture: true });
+      window.addEventListener('resize', handlePositionUpdate, { passive: true });
 
       return () => {
-        window.removeEventListener('scroll', handlePositionUpdate, true);
+        window.removeEventListener('scroll', handlePositionUpdate, { capture: true });
         window.removeEventListener('resize', handlePositionUpdate);
       };
     }
-  }, [isDropdownOpen, dropdownAlign]);
+  }, [isDropdownOpen, dropdownAlign, overflowActions.length]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -101,16 +185,6 @@ export default function ActionButtonGroup({
     }
   }, [isDropdownOpen]);
 
-  // On mobile, show fewer primary actions if mobileCollapse is enabled
-  const mobileMaxPrimary = mobileCollapse ? Math.min(1, maxPrimaryActions) : maxPrimaryActions;
-  const visiblePrimaryActions = primaryActions.slice(0, mobileCollapse ? mobileMaxPrimary : maxPrimaryActions);
-  const overflowActions = [
-    ...(mobileCollapse ? primaryActions.slice(mobileMaxPrimary) : primaryActions.slice(maxPrimaryActions)),
-    ...(secondaryActions.length > 0 && primaryActions.length > 0 ? [{ separator: true } as ActionItem] : []),
-    ...secondaryActions
-  ];
-
-  const hasDropdown = overflowActions.length > 0;
 
   const renderActionButton = (action: ActionItem, index: number) => {
     if (action.href) {
@@ -152,24 +226,7 @@ export default function ActionButtonGroup({
     }
 
     if (action.href) {
-      return (
-        <a
-          key={index}
-          href={action.href}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gold/10 hover:text-gold transition-colors",
-            action.disabled && "opacity-50 cursor-not-allowed"
-          )}
-          onClick={() => {
-            if (!action.disabled) {
-              setIsDropdownOpen(false);
-            }
-          }}
-        >
-          {action.icon && <action.icon className="w-4 h-4" />}
-          {action.label}
-        </a>
-      );
+      return renderDropdownLinkItem(action, index);
     }
 
     return (
@@ -183,21 +240,42 @@ export default function ActionButtonGroup({
         }}
         disabled={action.disabled}
         className={cn(
-          "flex items-center gap-2 w-full text-left px-4 py-2 text-sm transition-colors",
+          "flex items-center gap-3 w-full text-left px-4 py-3 sm:py-2.5 text-sm sm:text-base transition-colors rounded-sm touch-manipulation min-h-[48px] sm:min-h-[auto]",
           action.variant === 'danger' 
-            ? "text-red-400 hover:bg-red-900/10" 
-            : "text-gray-300 hover:bg-gold/10 hover:text-gold",
+            ? "text-red-400 hover:bg-red-900/20 hover:text-red-300 active:bg-red-900/30" 
+            : "text-gray-300 hover:bg-gold/10 hover:text-gold active:bg-gold/20",
           action.disabled && "opacity-50 cursor-not-allowed"
         )}
       >
-        {action.icon && <action.icon className="w-4 h-4" />}
-        {action.label}
+        {action.icon && <action.icon className="w-5 h-5 sm:w-4 sm:h-4 flex-shrink-0" />}
+        <span className="truncate font-medium">{action.label}</span>
         {action.loading && (
-          <div className="ml-auto">
+          <div className="ml-auto flex-shrink-0">
             <div className="w-3 h-3 animate-spin rounded-full border border-current border-t-transparent" />
           </div>
         )}
       </button>
+    );
+  };
+
+  const renderDropdownLinkItem = (action: ActionItem, index: number) => {
+    return (
+      <a
+        key={index}
+        href={action.href}
+        className={cn(
+          "flex items-center gap-3 px-4 py-3 sm:py-2.5 text-sm sm:text-base text-gray-300 hover:bg-gold/10 hover:text-gold active:bg-gold/20 transition-colors rounded-sm touch-manipulation min-h-[48px] sm:min-h-[auto]",
+          action.disabled && "opacity-50 cursor-not-allowed"
+        )}
+        onClick={() => {
+          if (!action.disabled) {
+            setIsDropdownOpen(false);
+          }
+        }}
+      >
+        {action.icon && <action.icon className="w-5 h-5 sm:w-4 sm:h-4 flex-shrink-0" />}
+        <span className="truncate font-medium">{action.label}</span>
+      </a>
     );
   };
 
@@ -209,9 +287,9 @@ export default function ActionButtonGroup({
       {/* Mobile-responsive primary actions */}
       {mobileCollapse && (
         <>
-          {/* Mobile: show only first action */}
+          {/* Mobile: hide primary actions to save space */}
           <div className="flex sm:hidden">
-            {visiblePrimaryActions.length > 0 && renderActionButton(visiblePrimaryActions[0], 0)}
+            {/* No primary actions shown on mobile for cleaner layout */}
           </div>
 
           {/* Desktop: show all visible primary actions */}
@@ -230,10 +308,15 @@ export default function ActionButtonGroup({
             size={size}
             icon={MoreHorizontal}
             onClick={() => {
-              if (!isDropdownOpen) {
-                updateDropdownPosition();
+              const newState = !isDropdownOpen;
+              setIsDropdownOpen(newState);
+              
+              if (newState && buttonRef.current) {
+                // Force immediate position update when opening
+                requestAnimationFrame(() => {
+                  updateDropdownPosition();
+                });
               }
-              setIsDropdownOpen(!isDropdownOpen);
             }}
             tooltip="More actions"
             aria-expanded={isDropdownOpen}
@@ -243,11 +326,16 @@ export default function ActionButtonGroup({
           {isDropdownOpen && typeof window !== 'undefined' && createPortal(
             <div
               ref={dropdownRef}
-              className="fixed w-48 bg-black border border-gold/20 rounded-lg shadow-lg z-[9999]"
+              className="fixed w-60 sm:w-48 bg-black border border-gold/20 rounded-lg shadow-xl z-[9999] max-h-72 overflow-y-auto backdrop-blur-sm"
               style={{
-                top: dropdownPosition.top,
-                left: dropdownAlign === 'left' ? dropdownPosition.left : 'auto',
-                right: dropdownAlign === 'right' ? dropdownPosition.right : 'auto'
+                position: 'fixed',
+                top: `${dropdownPosition.top}px`,
+                left: dropdownAlign === 'left' ? `${dropdownPosition.left}px` : 'auto',
+                right: dropdownAlign === 'right' ? `${dropdownPosition.right}px` : 'auto',
+                maxHeight: typeof window !== 'undefined' && window.innerWidth < 640 ? '280px' : '300px',
+                minWidth: typeof window !== 'undefined' && window.innerWidth < 640 ? '240px' : '176px',
+                transform: 'translateZ(0)', // Force hardware acceleration
+                willChange: 'transform'
               }}
             >
               <div className="py-1">

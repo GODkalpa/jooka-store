@@ -511,47 +511,50 @@ export default function EditProductPage() {
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/admin/products"
-              className="flex items-center gap-2 text-gray-400 hover:text-gold transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back to Products
-            </Link>
-            <div className="h-6 w-px bg-gold/30" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-gold">
-              Edit Product
-            </h1>
-          </div>
-          {product && (
-            <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-4 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0">
               <Link
-                href={`/product/${product.slug}`}
-                target="_blank"
-                className="flex items-center gap-2 px-4 py-2 bg-charcoal border border-gold/20 text-gray-300 hover:text-white hover:border-gold/40 rounded-lg transition-colors"
+                href="/admin/products"
+                className="flex items-center gap-2 text-gray-400 hover:text-gold transition-colors text-sm sm:text-base whitespace-nowrap"
               >
-                <Eye className="w-4 h-4" />
-                View Product
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="hidden xs:inline">Back to Products</span>
+                <span className="xs:hidden">Back</span>
               </Link>
+              <div className="hidden sm:block h-6 w-px bg-gold/30" />
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold truncate">
+                Edit Product
+              </h1>
             </div>
-          )}
+            {product && (
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <Link
+                  href={`/product/${product?.slug}`}
+                  target="_blank"
+                  className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-charcoal border border-gold/20 text-gray-300 hover:text-white hover:border-gold/40 rounded-lg transition-colors text-sm sm:text-base w-full sm:w-auto justify-center sm:justify-start"
+                >
+                  <Eye className="w-4 h-4 flex-shrink-0" />
+                  <span>View Product</span>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Form */}
-        <div className="bg-charcoal rounded-lg border border-gold/20 p-6 sm:p-8">
-          <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="bg-charcoal rounded-lg border border-gold/20 p-4 sm:p-6 lg:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
             {error && (
-              <div className="bg-red-900/20 border border-red-500 rounded-lg p-4">
-                <p className="text-red-400">{error}</p>
+              <div className="bg-red-900/20 border border-red-500 rounded-lg p-3 sm:p-4">
+                <p className="text-red-400 text-sm sm:text-base">{error}</p>
               </div>
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               {/* Product Name */}
               <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">
                   Product Name *
                 </label>
                 <input
@@ -559,14 +562,14 @@ export default function EditProductPage() {
                   required
                   value={formData.name}
                   onChange={(e) => handleNameChange(e.target.value)}
-                  className="w-full px-4 py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
                   placeholder="Enter product name"
                 />
               </div>
 
               {/* Slug */}
               <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">
                   URL Slug *
                 </label>
                 <input
@@ -574,14 +577,14 @@ export default function EditProductPage() {
                   required
                   value={formData.slug}
                   onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                  className="w-full px-4 py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
                   placeholder="product-url-slug"
                 />
               </div>
 
               {/* Price */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">
                   Price *
                 </label>
                 <input
@@ -591,14 +594,14 @@ export default function EditProductPage() {
                   required
                   value={formData.price}
                   onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                  className="w-full px-4 py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
                   placeholder="0.00"
                 />
               </div>
 
               {/* Compare Price */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">
                   Compare Price
                 </label>
                 <input
@@ -607,7 +610,7 @@ export default function EditProductPage() {
                   min="0"
                   value={formData.comparePrice}
                   onChange={(e) => setFormData(prev => ({ ...prev, comparePrice: e.target.value }))}
-                  className="w-full px-4 py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
                   placeholder="0.00"
                 />
               </div>
@@ -615,7 +618,7 @@ export default function EditProductPage() {
               {/* Inventory Count */}
               {!formData.trackVariants ? (
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">
                     Total Inventory Count
                   </label>
                   <input
@@ -623,7 +626,7 @@ export default function EditProductPage() {
                     min="0"
                     value={formData.inventoryCount}
                     onChange={(e) => setFormData(prev => ({ ...prev, inventoryCount: e.target.value }))}
-                    className="w-full px-4 py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/50 border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
                     placeholder="0"
                   />
                 </div>
@@ -830,26 +833,26 @@ export default function EditProductPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-4 pt-8 mt-8 border-t border-gold/30">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-gold/30">
               <Link
                 href="/admin/products"
-                className="px-8 py-3 text-gray-300 hover:text-white hover:bg-charcoal/50 rounded-xl transition-all duration-200 font-medium order-2 sm:order-1 border border-gray-600 hover:border-gray-500 text-center"
+                className="px-6 sm:px-8 py-2.5 sm:py-3 text-gray-300 hover:text-white hover:bg-charcoal/50 rounded-lg sm:rounded-xl transition-all duration-200 font-medium order-2 sm:order-1 border border-gray-600 hover:border-gray-500 text-center text-sm sm:text-base"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={saving}
-                className="relative px-10 py-3 bg-gradient-to-r from-gold to-gold/90 text-black rounded-xl font-semibold hover:from-gold/90 hover:to-gold/80 focus:outline-none focus:ring-2 focus:ring-gold/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 transition-all duration-200 order-1 sm:order-2 min-w-[180px] shadow-lg"
+                className="relative px-8 sm:px-10 py-2.5 sm:py-3 bg-gradient-to-r from-gold to-gold/90 text-black rounded-lg sm:rounded-xl font-semibold hover:from-gold/90 hover:to-gold/80 focus:outline-none focus:ring-2 focus:ring-gold/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3 transition-all duration-200 order-1 sm:order-2 min-w-[160px] sm:min-w-[180px] shadow-lg text-sm sm:text-base"
               >
                 {saving ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
                     <span>Updating...</span>
                   </>
                 ) : (
                   <>
-                    <Save className="w-5 h-5" />
+                    <Save className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span>Update Product</span>
                   </>
                 )}

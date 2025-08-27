@@ -88,54 +88,63 @@ export default function AdminProducts() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gold">Product Management</h1>
-          <p className="text-gray-400 mt-1">Manage your product catalog</p>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold truncate">
+            Product Management
+          </h1>
+          <p className="text-gray-400 mt-1 text-sm sm:text-base">
+            Manage your product catalog
+          </p>
         </div>
         <button 
           onClick={() => setShowCreateModal(true)}
-          className="btn-primary flex items-center justify-center sm:justify-start"
+          className="btn-primary flex items-center justify-center sm:justify-start w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base whitespace-nowrap"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Product
+          <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+          <span className="sm:inline">Add Product</span>
         </button>
       </div>
 
       {/* Filters */}
       <div className="bg-charcoal rounded-lg p-4 sm:p-6 border border-gold/20">
-        <div className="flex flex-col gap-4">
+        <div className="space-y-4">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 z-10" />
             <input
               type="text"
               placeholder="Search products by name or slug..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              className="w-full pl-10 pr-4 py-2 bg-black border border-gold/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-gold"
+              className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-black border border-gold/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all text-sm sm:text-base"
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             {/* Status Filter */}
-            <div className="relative flex-1 sm:flex-none">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className="relative flex-1 sm:min-w-0 sm:max-w-xs">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 z-10" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full pl-10 pr-8 py-2 bg-black border border-gold/20 rounded-md text-white focus:outline-none focus:border-gold appearance-none"
+                className="w-full pl-10 pr-8 py-2.5 sm:py-3 bg-black border border-gold/20 rounded-md text-white focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 appearance-none transition-all text-sm sm:text-base cursor-pointer"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
                 <option value="out_of_stock">Out of Stock</option>
               </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
 
             <button
               onClick={handleSearch}
-              className="btn-secondary px-6 py-2"
+              className="btn-secondary px-6 py-2.5 sm:py-3 text-sm sm:text-base whitespace-nowrap min-w-[100px] sm:min-w-[120px]"
             >
               Search
             </button>

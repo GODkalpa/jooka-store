@@ -140,77 +140,104 @@ export default function ProductsTable({ products, onProductUpdate }: ProductsTab
       {/* Mobile Card View */}
       <div className="block md:hidden">
         {products.length === 0 ? (
-          <div className="px-6 py-8 text-center text-gray-400">
+          <div className="px-4 sm:px-6 py-8 text-center text-gray-400">
             <Package className="w-12 h-12 mx-auto mb-4 text-gray-600" />
-            <p>No products found</p>
+            <p className="text-sm sm:text-base">No products found</p>
           </div>
         ) : (
           <div className="divide-y divide-gold/20">
             {products.map((product) => (
-              <div key={product.id} className="p-4 hover:bg-gold/5">
-                <div className="flex items-start space-x-3">
-                  <div className="w-16 h-16 relative flex-shrink-0">
+              <div key={product.id} className="p-3 sm:p-4 hover:bg-gold/5 relative overflow-visible">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  {/* Product Image */}
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 relative flex-shrink-0">
                     <SafeImage
                       src={product.images?.[0]?.secure_url || ''}
                       alt={product.name}
                       fill
                       className="rounded-lg object-cover"
-                      fallbackIcon={<Package className="w-6 h-6 text-gray-500" />}
+                      fallbackIcon={<Package className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />}
                       fallbackClassName="w-full h-full bg-gray-700 rounded-lg flex items-center justify-center"
                     />
                   </div>
+                  
+                  {/* Product Details */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <h3 className="text-sm font-medium text-white truncate">
-                          {product.name}
-                        </h3>
-                        {product.featured && (
-                          <Star className="w-4 h-4 text-gold ml-2 flex-shrink-0" fill="currentColor" />
-                        )}
+                    {/* Header with name, status and actions */}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-start min-w-0 flex-1">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-sm sm:text-base font-medium text-white truncate">
+                              {product.name}
+                            </h3>
+                            {product.featured && (
+                              <Star className="w-3 h-3 sm:w-4 sm:h-4 text-gold flex-shrink-0" fill="currentColor" />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`inline-flex px-2 py-1 rounded-md text-xs font-medium border ${statusColors[product.status]}`}>
+                              {product.status.replace('_', ' ')}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium border ${statusColors[product.status]}`}>
-                        {product.status.replace('_', ' ')}
-                      </span>
+                      
+                      {/* Actions - positioned at top right */}
+                      <div className="flex-shrink-0 self-start">
+                        <TableRowActions
+                          viewHref={`/product/${product.slug}`}
+                          editHref={`/admin/products/${product.id}/edit`}
+                          onToggleFeatured={() => handleFeaturedToggle(product.id, product.featured)}
+                          onToggleStatus={() => handleStatusChange(
+                            product.id,
+                            product.status === 'active' ? 'inactive' : 'active'
+                          )}
+                          onDelete={() => handleDelete(product.id)}
+                          isFeatured={product.featured}
+                          isActive={product.status === 'active'}
+                          size="sm"
+                        />
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-400 mb-3">
-                      <div>
-                        <span className="text-white font-medium">
-                          {formatPriceWithSymbol(product.price)}
-                        </span>
-                        {product.compare_price && (
-                          <span className="ml-1 line-through">
-                            {formatPriceWithSymbol(product.compare_price)}
+                    {/* Product Details Grid */}
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs sm:text-sm text-gray-400">
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-xs mb-1">Price</span>
+                        <div>
+                          <span className="text-white font-medium">
+                            {formatPriceWithSymbol(product.price)}
                           </span>
-                        )}
+                          {product.compare_price && (
+                            <span className="ml-2 line-through text-xs text-gray-500">
+                              {formatPriceWithSymbol(product.compare_price)}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className={`font-medium ${getDisplayInventory(product) <= 10
-                        ? 'text-red-400'
-                        : getDisplayInventory(product) <= 50
-                          ? 'text-yellow-400'
-                          : 'text-green-400'
-                        }`}>
-                        {getDisplayInventory(product)} units
+                      
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-xs mb-1">Inventory</span>
+                        <div className={`font-medium ${getDisplayInventory(product) <= 10
+                          ? 'text-red-400'
+                          : getDisplayInventory(product) <= 50
+                            ? 'text-yellow-400'
+                            : 'text-green-400'
+                          }`}>
+                          {getDisplayInventory(product)} units
+                        </div>
                       </div>
-                      <div>{product.category_name || 'Uncategorized'}</div>
-                      <div>{formatSafeDate(product.created_at)}</div>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <TableRowActions
-                        viewHref={`/product/${product.slug}`}
-                        editHref={`/admin/products/${product.id}/edit`}
-                        onToggleFeatured={() => handleFeaturedToggle(product.id, product.featured)}
-                        onToggleStatus={() => handleStatusChange(
-                          product.id,
-                          product.status === 'active' ? 'inactive' : 'active'
-                        )}
-                        onDelete={() => handleDelete(product.id)}
-                        isFeatured={product.featured}
-                        isActive={product.status === 'active'}
-                        size="sm"
-                      />
+                      
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-xs mb-1">Category</span>
+                        <div className="truncate">{product.category_name || 'Uncategorized'}</div>
+                      </div>
+                      
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-xs mb-1">Created</span>
+                        <div>{formatSafeDate(product.created_at)}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
