@@ -147,7 +147,7 @@ export default function ProductsTable({ products, onProductUpdate }: ProductsTab
         ) : (
           <div className="divide-y divide-gold/20">
             {products.map((product) => (
-              <div key={product.id} className="p-3 sm:p-4 hover:bg-gold/5 relative overflow-visible">
+              <div key={product.id} className="p-3 sm:p-4 hover:bg-gold/5 relative">
                 <div className="flex items-start gap-3 sm:gap-4">
                   {/* Product Image */}
                   <div className="w-14 h-14 sm:w-16 sm:h-16 relative flex-shrink-0">
@@ -183,8 +183,8 @@ export default function ProductsTable({ products, onProductUpdate }: ProductsTab
                         </div>
                       </div>
                       
-                      {/* Actions - positioned at top right */}
-                      <div className="flex-shrink-0 self-start">
+                      {/* Actions - positioned at top right with proper mobile spacing */}
+                      <div className="flex-shrink-0 self-start ml-2">
                         <TableRowActions
                           viewHref={`/product/${product.id}`}
                           editHref={`/admin/products/${product.id}/edit`}
