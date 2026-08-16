@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { RefreshCw } from 'lucide-react';
 
 function VerifyOTPContent() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -104,17 +104,14 @@ function VerifyOTPContent() {
           throw new Error(data.error || 'Verification failed');
         }
 
-        // Registration successful - now we need to sign in the user on the client side
-        // The user was created on the server, but we need to authenticate them on the client
         setError('');
-        setMessage('Account created successfully! Redirecting to sign in...');
+        setMessage('Account verified successfully! Redirecting to sign in...');
 
-        // Redirect to sign-in page with success message
         setTimeout(() => {
           router.push('/auth/signin?message=Account created successfully! Please sign in with your credentials.');
-        }, 2000);
+        }, 1800);
       } else {
-        // Handle sign-in OTP verification (existing flow)
+        // Handle sign-in OTP verification
         const response = await fetch('/api/auth/verify-otp-custom', {
           method: 'POST',
           headers: {
@@ -132,7 +129,6 @@ function VerifyOTPContent() {
           throw new Error(data.error || 'Verification failed');
         }
 
-        // Redirect to success page
         router.push('/auth/verified');
       }
 
@@ -164,9 +160,9 @@ function VerifyOTPContent() {
         throw new Error(data.error || 'Failed to resend code');
       }
 
-      setResendCooldown(60); // 60 second cooldown
-      setOtp(['', '', '', '', '', '']); // Clear current OTP
-      inputRefs.current[0]?.focus(); // Focus first input
+      setResendCooldown(60);
+      setOtp(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
 
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to resend code');
@@ -176,47 +172,43 @@ function VerifyOTPContent() {
   };
 
   if (!email) {
-    return null; // Will redirect
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full space-y-8"
-      >
-        <div className="text-center">
-          <div className="w-16 h-16 bg-[#D4AF37] rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Check Your Email</h1>
-          <p className="text-gray-400 mb-2">
-            We've sent a verification code to
+    <div className="py-12 sm:py-20 px-4 flex items-center justify-center font-sans text-gray-900">
+      <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-sm space-y-6">
+        <div className="text-center space-y-1">
+          <span className="inline-block bg-[#C8102E] text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full tracking-widest mb-1">
+            Verification
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
+            Check Your Email
+          </h1>
+          <p className="text-xs text-gray-500">
+            We sent a 6-digit verification code to
           </p>
-          <p className="text-[#D4AF37] font-medium">{email}</p>
+          <p className="text-xs font-mono font-bold text-gray-900 mt-1">{email}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-900/20 border border-red-500 text-red-400 px-4 py-3 rounded">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 font-medium">
               {error}
             </div>
           )}
 
           {message && (
-            <div className="bg-green-900/20 border border-green-500 text-green-400 px-4 py-3 rounded">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-700 font-medium">
               {message}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-4 text-center">
-              Enter the 6-digit code from your email
+            <label className="block text-xs font-semibold text-gray-700 mb-3 text-center">
+              Enter 6-Digit Code
             </label>
-            <div className="flex justify-center space-x-3">
+            <div className="flex justify-center gap-2 sm:gap-3">
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -229,7 +221,7 @@ function VerifyOTPContent() {
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste}
-                  className="w-12 h-12 text-center text-xl font-bold bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
+                  className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-mono font-bold bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all"
                 />
               ))}
             </div>
@@ -238,53 +230,57 @@ function VerifyOTPContent() {
           <button
             type="submit"
             disabled={isLoading || otp.join('').length !== 6}
-            className="w-full bg-[#D4AF37] text-black py-3 px-4 rounded-md font-medium hover:bg-[#B8941F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-gray-900 hover:bg-[#C8102E] text-white text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors shadow-xs flex items-center justify-center space-x-2 border border-gray-900 hover:border-[#C8102E] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Verifying...' : 'Verify Email'}
+            {isLoading ? (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Verifying...</span>
+              </div>
+            ) : (
+              <span>Verify Code</span>
+            )}
           </button>
         </form>
 
-        <div className="text-center space-y-4">
-          <div className="bg-blue-900/20 border border-blue-500 text-blue-400 px-4 py-3 rounded text-sm">
-            <p className="font-medium mb-1">Received a link instead of a code?</p>
-            <p>Click the link in your email to verify your account, or request a new code below.</p>
+        <div className="text-center space-y-3 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-center space-x-2 text-xs text-gray-600">
+            <span>Didn't receive code?</span>
+            <button
+              onClick={handleResendCode}
+              disabled={isResending || resendCooldown > 0}
+              className="font-bold text-gray-900 hover:text-[#C8102E] hover:underline inline-flex items-center gap-1 disabled:opacity-50 disabled:no-underline"
+            >
+              {isResending ? (
+                <>
+                  <RefreshCw className="w-3 h-3 animate-spin" /> Sending...
+                </>
+              ) : resendCooldown > 0 ? (
+                `Resend in ${resendCooldown}s`
+              ) : (
+                'Resend Code'
+              )}
+            </button>
           </div>
 
-          <p className="text-gray-400">
-            Didn't receive the code?
-          </p>
-
-          <button
-            onClick={handleResendCode}
-            disabled={isResending || resendCooldown > 0}
-            className="text-[#D4AF37] hover:text-[#B8941F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isResending
-              ? 'Sending...'
-              : resendCooldown > 0
-                ? `Resend in ${resendCooldown}s`
-                : 'Resend Code'
-            }
-          </button>
-
-          <div className="pt-4 border-t border-gray-800">
+          <div>
             <Link
               href="/auth/signup"
-              className="text-gray-400 hover:text-white transition-colors text-sm"
+              className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
             >
               ← Back to Sign Up
             </Link>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
 
 function LoadingSpinner() {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37]"></div>
+    <div className="py-20 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
     </div>
   );
 }

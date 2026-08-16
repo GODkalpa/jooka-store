@@ -17,6 +17,10 @@ const Footer = dynamic(() => import('@/components/Footer'), {
   loading: () => <div className="h-32 bg-black" />
 })
 
+const CartDrawer = dynamic(() => import('@/components/CartDrawer'), {
+  ssr: false
+})
+
 const ConditionalLayout = memo(function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   
@@ -31,6 +35,7 @@ const ConditionalLayout = memo(function ConditionalLayout({ children }: { childr
         {!isDashboard && <Navbar />}
         <main className="min-h-screen">{children}</main>
         {!isDashboard && <Footer />}
+        {!isDashboard && <CartDrawer />}
       </CartSyncProvider>
     </UserDataProvider>
   )

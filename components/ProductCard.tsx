@@ -1,9 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
-import { ShoppingCart } from 'lucide-react'
+import { Star, ShoppingBag, Heart } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
 import FallbackImage from '@/components/ui/FallbackImage'
 import { formatPriceWithSymbol } from '@/lib/utils/currency'
@@ -12,8 +12,14 @@ interface Product {
   id: string
   name: string
   price: number
+  originalPrice?: number
   image: string
   category?: string
+  images?: any[]
+  colors?: string[]
+  badge?: string
+  rating?: number
+  reviewsCount?: number
 }
 
 interface ProductCardProps {
@@ -22,9 +28,14 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((state) => state.addItem)
+  const [isSaved, setIsSaved] = useState(false)
+
+  const originalPrice = product.originalPrice || Math.round(product.price * 1.35)
+  const discountPercent = Math.round(((originalPrice - product.price) / originalPrice) * 100)
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     await addItem({
       id: product.id,
       name: product.name,
@@ -34,82 +45,84 @@ export default function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <motion.div
-      className="group relative bg-black/40 backdrop-blur-sm border border-gold/10 hover:border-gold/30 transition-all duration-500 overflow-hidden hover:-translate-y-1 sm:hover:-translate-y-2 hover:scale-[1.01] sm:hover:scale-[1.02] transform rounded-lg"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      viewport={{ once: true }}
-    >
-      {/* Image Container */}
-      <div className="relative aspect-[3/4] sm:aspect-[4/5] overflow-hidden">
-        <Link href={`/product/${product.id}`}>
+    <div className="group relative flex flex-col bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-gray-300 transition-all duration-200">
+      {/* Product Image Container */}
+      <div className="relative aspect-[3/4] w-full bg-gray-50 overflow-hidden">
+        <Link href={`/product/${product.id}`} className="block w-full h-full">
           <FallbackImage
             src={product.image}
             alt={product.name}
             fallbackSrc="/placeholder-product.svg"
             fill
-            className="object-cover group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-700 ease-out"
+            className="object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
           />
         </Link>
 
-        {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent" />
-
-        {/* Category Badge */}
-        {product.category && (
-          <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-black/70 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-            <span className="text-gold/90 text-xs font-medium tracking-wider uppercase">
-              {product.category}
+        {/* Discount / Capsule Badge */}
+        {discountPercent > 0 ? (
+          <div className="absolute top-2.5 left-2.5 z-10">
+            <span className="bg-[#C8102E] text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-xs shadow-xs">
+              {discountPercent}% OFF
             </span>
           </div>
-        )}
+        ) : product.badge ? (
+          <div className="absolute top-2.5 left-2.5 z-10">
+            <span className="bg-[#111827] text-white text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-xs shadow-xs">
+              {product.badge}
+            </span>
+          </div>
+        ) : null}
 
-        {/* Quick Add Button */}
+        {/* Wishlist Button */}
         <button
-          onClick={handleAddToCart}
-          className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 bg-gold/95 hover:bg-gold text-black w-8 h-8 sm:w-9 sm:h-9 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg flex items-center justify-center border border-gold/20"
+          onClick={(e) => {
+            e.preventDefault();
+            setIsSaved(!isSaved);
+          }}
+          className="absolute top-2.5 right-2.5 p-2 bg-white/90 backdrop-blur-xs rounded-full text-gray-700 hover:text-[#C8102E] hover:bg-white transition-colors z-10 shadow-xs"
+          aria-label="Save item"
         >
-          <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-2" />
+          <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-[#C8102E] text-[#C8102E]' : ''}`} />
         </button>
 
-        {/* Hover Overlay with Product Info - Hidden on mobile for better performance */}
-        <div className="hidden sm:block absolute inset-x-0 bottom-0 p-4 lg:p-6 text-white opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
-          <div className="space-y-2">
-            <h3 className="text-base lg:text-lg font-serif font-medium text-gold line-clamp-1">
-              {product.name}
-            </h3>
-            <p className="text-xs lg:text-sm text-ivory/80 font-light">
-              Premium quality craftsmanship
-            </p>
-          </div>
+        {/* Quick Add Overlay */}
+        <div className="absolute inset-x-0 bottom-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2.5">
+          <button
+            onClick={handleAddToCart}
+            className="w-full py-2.5 bg-[#111827] hover:bg-[#C8102E] text-white text-xs font-semibold uppercase tracking-wider rounded-md flex items-center justify-center gap-2 shadow-sm transition-colors"
+          >
+            <ShoppingBag className="w-3.5 h-3.5" />
+            Add to Bag
+          </button>
         </div>
       </div>
 
-      {/* Product Info */}
-      <Link href={`/product/${product.id}`}>
-        <div className="p-3 sm:p-4 lg:p-6 space-y-2 sm:space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-ivory font-serif font-medium text-sm sm:text-base lg:text-lg group-hover:text-gold transition-colors duration-300 line-clamp-2 flex-1 pr-2">
+      {/* Product Info Section */}
+      <div className="p-3.5 flex flex-col flex-1 justify-between space-y-2">
+        <div>
+          <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest block mb-1">
+            {product.category || 'CAPSULE 01'}
+          </span>
+
+          <Link href={`/product/${product.id}`}>
+            <h3 className="text-xs font-semibold text-gray-900 group-hover:text-[#C8102E] transition-colors line-clamp-1">
               {product.name}
             </h3>
-            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gold rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 flex-shrink-0" />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <p className="text-gold font-semibold text-base sm:text-lg lg:text-xl tracking-wide">
-              {formatPriceWithSymbol(product.price)}
-            </p>
-            <span className="hidden sm:inline text-ivory/60 text-xs lg:text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-2 group-hover:translate-x-0">
-              View Details →
-            </span>
-          </div>
-
-          {/* Decorative Line */}
-          <div className="h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-x-0 group-hover:scale-x-100" />
+          </Link>
         </div>
-      </Link>
-    </motion.div>
+
+        {/* Pricing */}
+        <div className="pt-1 flex items-baseline gap-2">
+          <span className="text-sm font-bold text-[#111827]">
+            {formatPriceWithSymbol(product.price)}
+          </span>
+          {originalPrice > product.price && (
+            <span className="text-xs text-gray-400 line-through font-normal">
+              {formatPriceWithSymbol(originalPrice)}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }

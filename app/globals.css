@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   html {
@@ -10,42 +10,45 @@
   }
   
   body {
-    font-family: 'Inter', sans-serif;
-    background-color: #111111;
-    color: #F5F5F5;
-    /* Performance optimizations */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #FFFFFF;
+    color: #111827;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
   
-  /* Optimize transitions and animations */
-  * {
-    will-change: auto;
-  }
-  
-  /* Reduce motion for users who prefer it */
-  @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-  
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', serif;
-    color: #D4AF37;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #111827;
+    letter-spacing: -0.02em;
+    font-weight: 700;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-gold text-black px-6 py-3 rounded-md font-semibold hover:bg-charcoal hover:text-gold border-2 border-gold transition-all duration-300;
+    @apply bg-[#111827] text-white px-6 py-3 rounded-md text-xs font-semibold tracking-wide hover:bg-[#C8102E] transition-all duration-200 shadow-sm flex items-center justify-center gap-2;
   }
 
   .btn-secondary {
-    @apply border-2 border-gold text-gold px-6 py-3 rounded-md font-semibold hover:bg-gold hover:text-black transition-all duration-300;
+    @apply bg-white border border-gray-300 text-[#111827] px-6 py-3 rounded-md text-xs font-semibold tracking-wide hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2;
+  }
+
+  .btn-crimson {
+    @apply bg-[#C8102E] text-white px-6 py-3 rounded-md text-xs font-bold tracking-wide hover:bg-[#A60C24] transition-all duration-200 shadow-sm flex items-center justify-center gap-2;
+  }
+
+  .jooka-badge-red {
+    @apply bg-red-50 text-[#C8102E] border border-red-200 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-sm inline-block;
+  }
+
+  .jooka-badge-black {
+    @apply bg-[#111827] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-sm inline-block;
+  }
+
+  .jooka-badge-stone {
+    @apply bg-gray-100 text-gray-800 border border-gray-200 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-sm inline-block;
   }
 
   /* Animation classes for hydration-safe animations */
@@ -136,47 +139,47 @@
   }
 
   .card-product {
-    @apply bg-charcoal rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+    @apply bg-white overflow-hidden border border-neutral-200 transition-all duration-300;
   }
 
   .product-image-gallery {
-    @apply relative overflow-hidden rounded-2xl bg-charcoal shadow-2xl;
+    @apply relative overflow-hidden bg-neutral-100;
   }
 
   .product-thumbnail {
-    @apply relative flex-shrink-0 rounded-xl overflow-hidden border-3 transition-all duration-300;
+    @apply relative flex-shrink-0 overflow-hidden border transition-all duration-300;
   }
 
   .product-thumbnail.active {
-    @apply border-gold shadow-lg shadow-gold/25 scale-105;
+    @apply border-black scale-105;
   }
 
   .product-thumbnail.inactive {
-    @apply border-gray-600 hover:border-gold/50;
+    @apply border-neutral-200 hover:border-black;
   }
 
   .product-option-button {
-    @apply border-2 rounded-xl font-semibold transition-all duration-300;
+    @apply border font-medium transition-all duration-300;
   }
 
   .product-option-button.selected {
-    @apply border-gold bg-gold text-black shadow-lg shadow-gold/25;
+    @apply border-black bg-black text-white;
   }
 
   .product-option-button.unselected {
-    @apply border-gray-600 text-gray-300 hover:border-gold hover:text-gold;
+    @apply border-neutral-200 text-neutral-700 hover:border-black;
   }
 
   .feature-card {
-    @apply flex items-center space-x-3 p-4 bg-charcoal/30 rounded-lg border border-gray-700 transition-all duration-300 hover:bg-charcoal/50;
+    @apply flex items-center space-x-3 p-4 bg-neutral-50 border border-neutral-200 transition-all duration-300;
   }
 
   .quantity-control {
-    @apply flex items-center border-2 border-gray-600 rounded-xl overflow-hidden;
+    @apply flex items-center border border-neutral-200 overflow-hidden bg-white;
   }
 
   .quantity-button {
-    @apply p-3 hover:bg-gold hover:text-black transition-all duration-300;
+    @apply p-3 hover:bg-neutral-100 transition-all duration-300;
   }
 }
 /* Pe

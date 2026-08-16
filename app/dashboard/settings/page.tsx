@@ -1,427 +1,285 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Save, Shield, Bell, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Save, Shield, Bell, Eye, EyeOff, Trash2, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/firebase-auth';
 
-interface UserSettings {
-  email_notifications: boolean;
-  sms_notifications: boolean;
-  marketing_emails: boolean;
-  order_updates: boolean;
-  newsletter: boolean;
-  two_factor_enabled: boolean;
-  privacy_profile: 'public' | 'private';
-  data_sharing: boolean;
-}
-
-export default function CustomerSettings() {
-  const { user, firebaseUser, logout } = useAuth();
-  const [settings, setSettings] = useState<UserSettings>({
+export default function SettingsPage() {
+  const { user } = useAuth();
+  
+  const [preferences, setPreferences] = useState({
     email_notifications: true,
     sms_notifications: false,
-    marketing_emails: true,
-    order_updates: true,
-    newsletter: false,
-    two_factor_enabled: false,
-    privacy_profile: 'private',
-    data_sharing: false,
+    marketing_emails: false,
+    two_factor_auth: false,
+    profile_visibility: 'private',
   });
-  const [passwordData, setPasswordData] = useState({
-    current_password: '',
-    new_password: '',
-    confirm_password: '',
+  
+  const [passwords, setPasswords] = useState({
+    current: '',
+    new: '',
+    confirm: '',
   });
+  
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [showPasswords, setShowPasswords] = useState({
-    current: false,
-    new: false,
-    confirm: false,
-  });
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await fetch('/api/user/settings');
+        if (res.ok) {
+          const data = await res.json();
+          setPreferences({
+            email_notifications: data.email_notifications ?? true,
+            sms_notifications: data.sms_notifications ?? false,
+            marketing_emails: data.marketing_emails ?? false,
+            two_factor_auth: data.two_factor_auth ?? false,
+            profile_visibility: data.profile_visibility ?? 'private',
+          });
+        }
+      } catch (e) {
+        console.error('Failed to fetch settings:', e);
+      }
+    }
     fetchSettings();
   }, []);
 
-  const fetchSettings = async () => {
-    try {
-      if (!user || !firebaseUser) return;
-
-      const token = await firebaseUser.getIdToken();
-      const response = await fetch('/api/user/settings', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        setSettings(result.data || settings);
-      }
-    } catch (err) {
-      console.error('Failed to fetch settings:', err);
-    }
+  const handlePreferencesChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    setPreferences(prev => ({ ...prev, [name]: val }));
   };
 
-  const handleSettingsSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const savePreferences = async () => {
     setLoading(true);
-    setError(null);
-    setSuccess(null);
-
     try {
-      if (!user || !firebaseUser) return;
-
-      const token = await firebaseUser.getIdToken();
-      const response = await fetch('/api/user/settings', {
+      const res = await fetch('/api/user/settings', {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(settings),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(preferences),
       });
-
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.error || 'Failed to update settings');
+      if (res.ok) {
+        setMessage('Settings saved successfully.');
+        setTimeout(() => setMessage(''), 3000);
       }
-
-      setSuccess('Settings updated successfully!');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (e) {
+      console.error('Failed to save settings:', e);
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
+  const changePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (passwordData.new_password !== passwordData.confirm_password) {
-      setError('New passwords do not match');
+    if (passwords.new !== passwords.confirm) {
+      alert("New passwords don't match");
       return;
     }
-
-    if (passwordData.new_password.length < 8) {
-      setError('New password must be at least 8 characters long');
-      return;
-    }
-
-    setPasswordLoading(true);
-    setError(null);
-    setSuccess(null);
-
     try {
-      if (!user || !firebaseUser) return;
-
-      const token = await firebaseUser.getIdToken();
-      const response = await fetch('/api/user/change-password', {
+      const res = await fetch('/api/user/change-password', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          current_password: passwordData.current_password,
-          new_password: passwordData.new_password,
+          currentPassword: passwords.current,
+          newPassword: passwords.new,
         }),
       });
-
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.error || 'Failed to change password');
+      if (res.ok) {
+        setPasswords({ current: '', new: '', confirm: '' });
+        alert('Password changed successfully');
+      } else {
+        alert('Failed to change password');
       }
-
-      setSuccess('Password changed successfully!');
-      setPasswordData({
-        current_password: '',
-        new_password: '',
-        confirm_password: '',
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setPasswordLoading(false);
+    } catch (e) {
+      console.error('Failed to change password:', e);
     }
   };
 
-  const handleDeleteAccount = async () => {
-    const confirmation = prompt(
-      'This action cannot be undone. Type "DELETE" to confirm account deletion:'
-    );
-    
-    if (confirmation !== 'DELETE') {
-      return;
-    }
-
-    try {
-      if (!user || !firebaseUser) return;
-
-      const token = await firebaseUser.getIdToken();
-      const response = await fetch('/api/user/delete-account', {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        alert('Your account has been deleted successfully.');
-        await logout();
+  const deleteAccount = async () => {
+    if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+      try {
+        await fetch('/api/user/delete-account', { method: 'DELETE' });
         window.location.href = '/';
-      } else {
-        const result = await response.json();
-        setError(result.error || 'Failed to delete account');
+      } catch (e) {
+        console.error('Failed to delete account:', e);
       }
-    } catch (err) {
-      setError('An error occurred while deleting your account');
     }
   };
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gold">Account Settings</h1>
-        <p className="text-gray-400 mt-1">Manage your account preferences and security</p>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Settings</h1>
       </div>
 
-      {/* Success/Error Messages */}
-      {success && (
-        <div className="bg-green-900/20 border border-green-500 rounded-lg p-4">
-          <p className="text-green-400">{success}</p>
-        </div>
-      )}
-      {error && (
-        <div className="bg-red-900/20 border border-red-500 rounded-lg p-4">
-          <p className="text-red-400">{error}</p>
+      {message && (
+        <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-md text-sm">
+          <CheckCircle2 className="h-4 w-4" />
+          {message}
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Notification Settings */}
-        <div className="bg-charcoal rounded-lg border border-gold/20 p-6">
-          <div className="flex items-center mb-6">
-            <Bell className="w-5 h-5 text-gold mr-2" />
-            <h3 className="text-lg font-semibold text-gold">Notifications</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Bell className="h-5 w-5 text-gray-900" />
+            <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
           </div>
-          
-          <form onSubmit={handleSettingsSubmit} className="space-y-4">
-            <div className="space-y-4">
-              <label className="flex items-center justify-between">
-                <span className="text-sm text-gray-300">Email notifications</span>
-                <input
-                  type="checkbox"
-                  checked={settings.email_notifications}
-                  onChange={(e) => setSettings(prev => ({ ...prev, email_notifications: e.target.checked }))}
-                  className="w-4 h-4 text-gold bg-black border-gold/20 rounded focus:ring-gold focus:ring-2"
-                />
-              </label>
-
-              <label className="flex items-center justify-between">
-                <span className="text-sm text-gray-300">SMS notifications</span>
-                <input
-                  type="checkbox"
-                  checked={settings.sms_notifications}
-                  onChange={(e) => setSettings(prev => ({ ...prev, sms_notifications: e.target.checked }))}
-                  className="w-4 h-4 text-gold bg-black border-gold/20 rounded focus:ring-gold focus:ring-2"
-                />
-              </label>
-
-              <label className="flex items-center justify-between">
-                <span className="text-sm text-gray-300">Order updates</span>
-                <input
-                  type="checkbox"
-                  checked={settings.order_updates}
-                  onChange={(e) => setSettings(prev => ({ ...prev, order_updates: e.target.checked }))}
-                  className="w-4 h-4 text-gold bg-black border-gold/20 rounded focus:ring-gold focus:ring-2"
-                />
-              </label>
-
-              <label className="flex items-center justify-between">
-                <span className="text-sm text-gray-300">Marketing emails</span>
-                <input
-                  type="checkbox"
-                  checked={settings.marketing_emails}
-                  onChange={(e) => setSettings(prev => ({ ...prev, marketing_emails: e.target.checked }))}
-                  className="w-4 h-4 text-gold bg-black border-gold/20 rounded focus:ring-gold focus:ring-2"
-                />
-              </label>
-
-              <label className="flex items-center justify-between">
-                <span className="text-sm text-gray-300">Newsletter</span>
-                <input
-                  type="checkbox"
-                  checked={settings.newsletter}
-                  onChange={(e) => setSettings(prev => ({ ...prev, newsletter: e.target.checked }))}
-                  className="w-4 h-4 text-gold bg-black border-gold/20 rounded focus:ring-gold focus:ring-2"
-                />
-              </label>
-            </div>
-
-            <div className="pt-4 border-t border-gold/20">
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary flex items-center"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {loading ? 'Saving...' : 'Save Notification Settings'}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Security Settings */}
-        <div className="bg-charcoal rounded-lg border border-gold/20 p-6">
-          <div className="flex items-center mb-6">
-            <Shield className="w-5 h-5 text-gold mr-2" />
-            <h3 className="text-lg font-semibold text-gold">Security & Privacy</h3>
-          </div>
-          
           <div className="space-y-4">
-            <label className="flex items-center justify-between">
-              <span className="text-sm text-gray-300">Two-factor authentication</span>
+            <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.two_factor_enabled}
-                onChange={(e) => setSettings(prev => ({ ...prev, two_factor_enabled: e.target.checked }))}
-                className="w-4 h-4 text-gold bg-black border-gold/20 rounded focus:ring-gold focus:ring-2"
+                name="email_notifications"
+                checked={preferences.email_notifications}
+                onChange={handlePreferencesChange}
+                className="mt-1 w-4 h-4 accent-gray-900 rounded border-gray-300"
               />
+              <div>
+                <span className="block text-sm font-medium text-gray-900">Email Notifications</span>
+                <span className="block text-xs text-gray-500">Receive order updates via email.</span>
+              </div>
             </label>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="sms_notifications"
+                checked={preferences.sms_notifications}
+                onChange={handlePreferencesChange}
+                className="mt-1 w-4 h-4 accent-gray-900 rounded border-gray-300"
+              />
+              <div>
+                <span className="block text-sm font-medium text-gray-900">SMS Notifications</span>
+                <span className="block text-xs text-gray-500">Get text messages for delivery updates.</span>
+              </div>
+            </label>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="marketing_emails"
+                checked={preferences.marketing_emails}
+                onChange={handlePreferencesChange}
+                className="mt-1 w-4 h-4 accent-gray-900 rounded border-gray-300"
+              />
+              <div>
+                <span className="block text-sm font-medium text-gray-900">Marketing Emails</span>
+                <span className="block text-xs text-gray-500">Receive offers, discounts, and news.</span>
+              </div>
+            </label>
+          </div>
+        </div>
 
-            <div>
-              <label className="block text-sm text-gray-300 mb-2">Profile visibility</label>
+        <div className="bg-white rounded-lg border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="h-5 w-5 text-gray-900" />
+            <h2 className="text-lg font-bold text-gray-900">Security & Privacy</h2>
+          </div>
+          <div className="space-y-5">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="two_factor_auth"
+                checked={preferences.two_factor_auth}
+                onChange={handlePreferencesChange}
+                className="mt-1 w-4 h-4 accent-gray-900 rounded border-gray-300"
+              />
+              <div>
+                <span className="block text-sm font-medium text-gray-900">Two-Factor Authentication</span>
+                <span className="block text-xs text-gray-500">Add an extra layer of security to your account.</span>
+              </div>
+            </label>
+            <div className="pt-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Profile Visibility</label>
               <select
-                value={settings.privacy_profile}
-                onChange={(e) => setSettings(prev => ({ ...prev, privacy_profile: e.target.value as any }))}
-                className="w-full px-3 py-2 bg-black border border-gold/20 rounded-md text-white focus:outline-none focus:border-gold"
+                name="profile_visibility"
+                value={preferences.profile_visibility}
+                onChange={handlePreferencesChange}
+                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-md text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors"
               >
                 <option value="private">Private</option>
-                <option value="public">Public</option>
+                <option value="public">Public (Reviews only)</option>
               </select>
             </div>
-
-            <label className="flex items-center justify-between">
-              <span className="text-sm text-gray-300">Allow data sharing for analytics</span>
-              <input
-                type="checkbox"
-                checked={settings.data_sharing}
-                onChange={(e) => setSettings(prev => ({ ...prev, data_sharing: e.target.checked }))}
-                className="w-4 h-4 text-gold bg-black border-gold/20 rounded focus:ring-gold focus:ring-2"
-              />
-            </label>
           </div>
         </div>
       </div>
 
-      {/* Change Password */}
-      <div className="bg-charcoal rounded-lg border border-gold/20 p-6">
-        <h3 className="text-lg font-semibold text-gold mb-6">Change Password</h3>
-        
-        <form onSubmit={handlePasswordSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="flex justify-end">
+        <button onClick={savePreferences} disabled={loading} className="btn-primary flex items-center gap-2">
+          <Save className="h-4 w-4" />
+          {loading ? 'Saving...' : 'Save Preferences'}
+        </button>
+      </div>
+
+      <div className="border-t border-gray-200 my-8"></div>
+
+      <div className="bg-white rounded-lg border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+        <h2 className="text-lg font-bold text-gray-900 mb-4">Change Password</h2>
+        <form onSubmit={changePassword} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Current Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
               <div className="relative">
                 <input
-                  type={showPasswords.current ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  value={passwordData.current_password}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, current_password: e.target.value }))}
-                  className="w-full px-4 py-2 pr-10 bg-black border border-gold/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-gold"
-                  placeholder="Enter current password"
+                  value={passwords.current}
+                  onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gold"
-                >
-                  {showPasswords.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
               </div>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                New Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
               <div className="relative">
                 <input
-                  type={showPasswords.new ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  value={passwordData.new_password}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, new_password: e.target.value }))}
-                  className="w-full px-4 py-2 pr-10 bg-black border border-gold/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-gold"
-                  placeholder="Enter new password"
+                  value={passwords.new}
+                  onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gold"
-                >
-                  {showPasswords.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
               </div>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Confirm New Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New</label>
               <div className="relative">
                 <input
-                  type={showPasswords.confirm ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  value={passwordData.confirm_password}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, confirm_password: e.target.value }))}
-                  className="w-full px-4 py-2 pr-10 bg-black border border-gold/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-gold"
-                  placeholder="Confirm new password"
+                  value={passwords.confirm}
+                  onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gold"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
                 >
-                  {showPasswords.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
           </div>
-
-          <div className="pt-4 border-t border-gold/20">
-            <button
-              type="submit"
-              disabled={passwordLoading}
-              className="btn-primary flex items-center"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {passwordLoading ? 'Changing...' : 'Change Password'}
+          <div className="flex justify-end pt-2">
+            <button type="submit" className="btn-secondary">
+              Update Password
             </button>
           </div>
         </form>
       </div>
 
-      {/* Danger Zone */}
-      <div className="bg-red-900/20 border border-red-500/20 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-red-400 mb-4">Danger Zone</h3>
-        <p className="text-gray-400 text-sm mb-6">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-5">
+        <h2 className="text-lg font-bold text-red-900 mb-2">Danger Zone</h2>
+        <p className="text-sm text-red-700 mb-4">
           Once you delete your account, there is no going back. Please be certain.
         </p>
-        
         <button
-          onClick={handleDeleteAccount}
-          className="flex items-center px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+          onClick={deleteAccount}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors"
         >
-          <Trash2 className="w-4 h-4 mr-2" />
+          <Trash2 className="h-4 w-4" />
           Delete Account
         </button>
       </div>

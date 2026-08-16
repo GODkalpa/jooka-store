@@ -1,340 +1,253 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
-import Image from 'next/image';
+import JookaLogo from '@/components/JookaLogo';
 import { useAuth } from '@/lib/auth/firebase-auth';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingBag, Search, User, Heart, Menu, X, MapPin, Sparkles, Star } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { cn } from '@/lib/utils';
 
-interface NavLink {
-  label: string;
-  href: string;
-}
-
 interface NavbarProps {
-  logoSrc?: string;
-  logoAlt?: string;
-  navLinks?: NavLink[];
   className?: string;
 }
 
-const defaultNavLinks: NavLink[] = [
-  { label: 'HOME', href: '/' },
-  { label: 'SHOP', href: '/shop' },
-  { label: 'CART', href: '/cart' },
-  { label: 'LOGIN', href: '/auth/signin' },
-  { label: 'SIGN UP', href: '/auth/signup' },
+const CATEGORIES = [
+  { name: 'All Collection', href: '/shop' },
+  { name: 'Shirts', href: '/shop?category=Shirts' },
+  { name: 'Sweatshirts', href: '/shop?category=Sweatshirts' },
+  { name: 'Pants', href: '/shop?category=Pants' },
+  { name: 'Merch', href: '/shop?category=Merch' },
+  { name: 'Sale & Archive', href: '/shop?sale=true', isRed: true },
 ];
 
-// Helper component for navigation links - matching MinimalistHero style
-const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
-  <Link
-    href={href}
-    className="text-sm font-medium tracking-widest text-foreground/60 transition-colors hover:text-foreground"
-  >
-    {children}
-  </Link>
-);
-
-const Navbar = ({
-  logoSrc = "/logo.png",
-  logoAlt = "Jooka Logo",
-  navLinks = defaultNavLinks,
-  className = ""
-}: NavbarProps) => {
+export default function Navbar({ className = '' }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [isHydrated, setIsHydrated] = useState(false);
-  const { user, isLoading, isAuthenticated, logout } = useAuth();
-  const { getTotalItems } = useCartStore();
+  const { user, logout } = useAuth();
+  const { getTotalItems, openDrawer } = useCartStore();
 
-  // Handle hydration to prevent cart count mismatch
   useEffect(() => {
     setIsHydrated(true);
   }, []);
 
-  // Debug: Log authentication state
-  console.log('Navbar Auth State:', { user, isLoading, isAuthenticated });
+  const cartItemCount = isHydrated ? getTotalItems() : 0;
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
-
-  // Dynamic navigation links based on authentication status (excluding cart)
-  const getNavLinks = () => {
-    const baseLinks = [
-      { label: 'HOME', href: '/' },
-      { label: 'SHOP', href: '/shop' },
-    ];
-
-    if (user) {
-      // Authenticated user links
-      const userRole = user.role;
-      const userLinks = [
-        ...baseLinks,
-        {
-          label: userRole === 'admin' ? 'ADMIN' : 'DASHBOARD',
-          href: userRole === 'admin' ? '/admin/dashboard' : '/dashboard'
-        },
-      ];
-      return userLinks;
-    } else {
-      // Unauthenticated user links (show LOGIN/SIGNUP even when loading)
-      return [
-        ...baseLinks,
-        { label: 'LOGIN', href: '/auth/signin' },
-        { label: 'SIGN UP', href: '/auth/signup' },
-      ];
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      window.location.href = `/shop?search=${encodeURIComponent(searchQuery)}`;
     }
   };
 
-  const handleSignOut = async () => {
-    await logout();
-    closeMobileMenu();
-  };
-
-  const dynamicNavLinks = getNavLinks();
-  // Only get cart count after hydration to prevent SSR mismatch
-  const cartItemCount = isHydrated ? getTotalItems() : 0;
-
-  // Cart Icon Component
-  const CartIcon = () => (
-    <Link href="/cart" className="relative group">
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: (dynamicNavLinks.length + 1) * 0.1 }}
-        className="relative p-2 hover:bg-foreground/5 rounded-lg transition-colors"
-      >
-        <ShoppingCart className="w-6 h-6 text-foreground/60 group-hover:text-foreground transition-colors" />
-        {cartItemCount > 0 && (
-          <motion.span
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 bg-gold text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center min-w-[20px]"
-          >
-            {cartItemCount > 99 ? '99+' : cartItemCount}
-          </motion.span>
-        )}
-      </motion.div>
-    </Link>
-  );
-
   return (
     <>
-      {/* Main Navbar - Matching MinimalistHero header styling exactly */}
-      <header className={cn(
-        'fixed top-0 left-0 right-0 z-50 flex w-full items-center justify-between overflow-hidden bg-background px-6 py-4 font-sans md:px-8 md:py-6',
-        className
-      )}>
-        <div className="z-30 flex w-full max-w-7xl items-center justify-between mx-auto">
-          {/* Logo - Using image instead of text */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center"
-          >
-            <Link href="/" className="hover:opacity-80 transition-opacity">
-              <Image
-                src={logoSrc}
-                alt={logoAlt}
-                width={120}
-                height={40}
-                className="h-8 w-auto md:h-10"
-                priority
-              />
+      {/* 1. Top Announcement Bar - Full Width */}
+      <div className="w-full bg-[#111827] text-white py-2 px-4 sm:px-6 lg:px-12 text-xs font-medium tracking-wide text-center flex items-center justify-between gap-3 border-b border-gray-800">
+        <div className="flex items-center gap-2">
+          <span className="hidden sm:inline-flex items-center bg-[#C8102E] text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">
+            PROMO
+          </span>
+          <span className="text-gray-200 text-xs tracking-wide">
+            Complimentary Nepal delivery over ₨ 3,000 | Extra 20% off code: <strong className="text-white font-bold tracking-widest">JOOKA20</strong>
+          </span>
+        </div>
+
+        <div className="hidden lg:flex items-center gap-4 text-[11px] text-gray-300">
+          <span>Kathmandu Valley Dispatch</span>
+          <span>•</span>
+          <Link href="/shipping-returns" className="hover:text-white underline transition-colors">Track Order</Link>
+        </div>
+      </div>
+
+      {/* 2. Top Utility Sub-Header - Full Width */}
+      <div className="w-full bg-[#F9FAFB] border-b border-gray-200 py-1.5 px-4 sm:px-6 lg:px-12 text-xs text-gray-600 font-medium hidden md:block">
+        <div className="w-full flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            <span className="flex items-center gap-1.5 text-gray-700">
+              <MapPin className="w-3.5 h-3.5 text-[#C8102E]" />
+              <span>Deliver to Nepal: <strong className="text-gray-900 font-semibold">Kathmandu Valley</strong></span>
+            </span>
+            <span className="text-gray-300">|</span>
+            <Link href="/shipping-returns" className="hover:text-gray-900 transition-colors">
+              Delivery Zones
             </Link>
-          </motion.div>
-
-          {/* Desktop Navigation - Matching MinimalistHero styling */}
-          <div className="hidden items-center md:flex">
-            {/* Main Navigation Links */}
-            <div className="flex items-center space-x-8">
-              {dynamicNavLinks.map((link, index) => (
-                <motion.div
-                  key={link.label}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <NavLink href={link.href}>
-                    {link.label}
-                  </NavLink>
-                </motion.div>
-              ))}
-
-              {/* Sign Out Button for Authenticated Users */}
-              {user && (
-                <motion.button
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: dynamicNavLinks.length * 0.1 }}
-                  onClick={handleSignOut}
-                  className="text-sm font-medium tracking-widest text-foreground/60 transition-colors hover:text-foreground"
-                >
-                  SIGN OUT
-                </motion.button>
-              )}
-            </div>
-
-            {/* Cart Icon - Positioned on the right */}
-            <div className="ml-8 pl-8 border-l border-foreground/10">
-              <CartIcon />
-            </div>
+            <span className="text-gray-300">|</span>
+            <Link href="/shipping-returns" className="hover:text-gray-900 transition-colors">
+              7-Day Exchanges
+            </Link>
           </div>
 
-          {/* Mobile Cart Icon and Menu Button */}
-          <div className="flex items-center space-x-4 md:hidden">
-            {/* Mobile Cart Icon */}
-            <Link href="/cart" className="relative">
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-                className="relative p-2"
-              >
-                <ShoppingCart className="w-6 h-6 text-foreground/60" />
-                {cartItemCount > 0 && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 bg-gold text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center min-w-[20px]"
-                  >
-                    {cartItemCount > 99 ? '99+' : cartItemCount}
-                  </motion.span>
-                )}
-              </motion.div>
+          <div className="flex items-center gap-5">
+            <Link href="/shipping-returns" className="hover:text-gray-900 transition-colors">
+              Support & Help
             </Link>
-
-            {/* Mobile Menu Button */}
-            <motion.button
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="flex flex-col space-y-1.5"
-              onClick={toggleMobileMenu}
-              aria-label="Toggle mobile menu"
-            >
-              <motion.span
-                className="block h-0.5 w-6 bg-foreground transition-all duration-300"
-                animate={isMobileMenuOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-              />
-              <motion.span
-                className="block h-0.5 w-6 bg-foreground transition-all duration-300"
-                animate={isMobileMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-              />
-              <motion.span
-                className="block h-0.5 w-5 bg-foreground transition-all duration-300"
-                animate={isMobileMenuOpen ? { rotate: -45, y: -6, width: 24 } : { rotate: 0, y: 0, width: 20 }}
-              />
-            </motion.button>
+            <span className="text-gray-300">|</span>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Link href={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} className="font-semibold text-gray-900 hover:text-[#C8102E]">
+                  Hi, {user.profile?.full_name || user.profile?.first_name || user.email?.split('@')[0]}
+                </Link>
+                <button
+                  onClick={async () => {
+                    await logout();
+                    window.location.reload();
+                  }}
+                  className="text-[11px] text-gray-400 hover:text-[#C8102E] font-normal transition-colors"
+                >
+                  (Sign Out)
+                </button>
+              </div>
+            ) : (
+              <Link href="/auth/signin" className="hover:text-[#C8102E] font-semibold text-gray-900">
+                Sign In / Register
+              </Link>
+            )}
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden animate-fade-in"
-          onClick={closeMobileMenu}
-        />
-      )}
+      {/* 3. Main Header Bar - Full Width Edge-to-Edge */}
+      <header className={cn("w-full bg-white border-b border-gray-200 sticky top-0 z-40 shadow-xs", className)}>
+        <div className="w-full px-4 sm:px-6 lg:px-12 py-3.5 flex items-center justify-between gap-4 sm:gap-6">
+          {/* Mobile Menu Trigger & Official Gold Logo */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 text-gray-800 hover:text-black"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
 
-      {/* Mobile Menu Panel */}
-      {isMobileMenuOpen && (
-        <div className="fixed top-0 right-0 bottom-0 z-50 w-80 max-w-[85vw] bg-background border-l border-foreground/20 md:hidden animate-slide-in-right">
+            <JookaLogo size="md" />
+          </div>
 
-            {/* Mobile Menu Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-foreground/20">
-              <Image
-                src={logoSrc}
-                alt={logoAlt}
-                width={100}
-                height={32}
-                className="h-6 w-auto"
-              />
-              <button
-                onClick={closeMobileMenu}
-                className="p-2 text-foreground hover:text-foreground/80 transition-colors"
-                aria-label="Close mobile menu"
+          {/* Search Bar */}
+          <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-2xl mx-6 items-center">
+            <div className="flex w-full bg-gray-100 border border-gray-200 rounded-lg overflow-hidden focus-within:bg-white focus-within:border-gray-900 transition-all">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="bg-transparent text-xs font-semibold text-gray-700 px-4 py-2.5 border-r border-gray-200 focus:outline-none cursor-pointer"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <option value="All">All Categories</option>
+                <option value="Shirts">Shirts</option>
+                <option value="Sweatshirts">Sweatshirts</option>
+                <option value="Pants">Pants</option>
+                <option value="Merch">Merch</option>
+              </select>
+
+              <input
+                type="text"
+                placeholder="Search clothing, outerwear, deals..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 bg-transparent focus:outline-none"
+              />
+
+              <button
+                type="submit"
+                className="bg-gray-900 hover:bg-[#C8102E] text-white px-5 flex items-center justify-center transition-colors"
+                aria-label="Search"
+              >
+                <Search className="w-4 h-4" />
               </button>
             </div>
+          </form>
 
-            {/* Mobile Menu Links */}
-            <div className="flex flex-col px-6 py-4 space-y-6">
-              {dynamicNavLinks.map((link, index) => (
-                <div
-                  key={link.label}
-                  className="opacity-0 animate-fade-in-right"
-                  style={{
-                    animationDelay: `${index * 0.1}s`,
-                    animationFillMode: 'forwards'
-                  }}
-                >
-                  <Link
-                    href={link.href}
-                    onClick={closeMobileMenu}
-                    className="block text-lg font-medium tracking-widest text-foreground/60 hover:text-foreground transition-colors duration-300 py-2"
-                  >
-                    {link.label}
-                  </Link>
-                </div>
-              ))}
+          {/* User Actions */}
+          <div className="flex items-center gap-5 sm:gap-6">
+            <Link
+              href={user ? (user.role === 'admin' ? '/admin/dashboard' : '/dashboard') : '/auth/signin'}
+              className="hidden sm:flex flex-col items-center text-gray-700 hover:text-gray-900 transition-colors"
+            >
+              <User className="w-5 h-5" />
+              <span className="text-[11px] font-medium mt-0.5">Account</span>
+            </Link>
 
-              {/* Mobile Cart Link */}
-              <div
-                className="opacity-0 animate-fade-in-right"
-                style={{
-                  animationDelay: `${dynamicNavLinks.length * 0.1}s`,
-                  animationFillMode: 'forwards'
-                }}
-              >
-                <Link
-                  href="/cart"
-                  onClick={closeMobileMenu}
-                  className="flex items-center justify-between text-lg font-medium tracking-widest text-foreground/60 hover:text-foreground transition-colors duration-300 py-2"
-                >
-                  <span>CART</span>
-                  {cartItemCount > 0 && (
-                    <span className="bg-gold text-black text-sm font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                      {cartItemCount > 99 ? '99+' : cartItemCount}
-                    </span>
-                  )}
-                </Link>
+            <Link
+              href="/shop"
+              className="hidden sm:flex flex-col items-center text-gray-700 hover:text-gray-900 transition-colors"
+            >
+              <Heart className="w-5 h-5" />
+              <span className="text-[11px] font-medium mt-0.5">Saved</span>
+            </Link>
+
+            {/* Shopping Bag CTA */}
+            <button
+              onClick={() => openDrawer()}
+              className="flex items-center gap-2.5 bg-gray-900 hover:bg-[#C8102E] text-white px-5 py-2.5 rounded-lg transition-colors shadow-xs"
+              aria-label="Open Shopping Bag"
+            >
+              <div className="relative">
+                <ShoppingBag className="w-5 h-5" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-[#C8102E] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                    {cartItemCount}
+                  </span>
+                )}
               </div>
-              
-              {/* Mobile Sign Out Button */}
-              {user && (
-                <button
-                  onClick={handleSignOut}
-                  className="block text-lg font-medium tracking-widest text-foreground/60 hover:text-foreground transition-colors duration-300 py-2 text-left opacity-0 animate-fade-in-right"
-                  style={{
-                    animationDelay: `${(dynamicNavLinks.length + 1) * 0.1}s`,
-                    animationFillMode: 'forwards'
-                  }}
-                >
-                  SIGN OUT
-                </button>
-              )}
-            </div>
+              <span className="text-xs font-semibold hidden xs:block">
+                Bag ({cartItemCount})
+              </span>
+            </button>
           </div>
-        )}
+        </div>
 
-      {/* Spacer to prevent content from hiding behind fixed navbar */}
-      <div className="h-10 md:h-12"></div>
+        {/* 4. Category Mega-Menu Bar - Full Width */}
+        <nav className="w-full border-t border-gray-100 bg-white hidden lg:block">
+          <div className="w-full px-4 sm:px-6 lg:px-12 flex items-center justify-between text-xs font-semibold text-gray-700">
+            {CATEGORIES.map((cat) => (
+              <Link
+                key={cat.name}
+                href={cat.href}
+                className={cn(
+                  "py-3.5 px-4 border-b-2 border-transparent transition-all hover:border-gray-900 hover:text-gray-900",
+                  cat.isRed ? "text-[#C8102E] font-bold hover:border-[#C8102E]" : ""
+                )}
+              >
+                {cat.name}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      </header>
+
+      {/* Mobile Search & Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 top-32 z-50 bg-white p-6 space-y-6 lg:hidden overflow-y-auto border-t border-gray-200">
+          <form onSubmit={handleSearchSubmit} className="relative">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 text-xs bg-gray-100 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-gray-900"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          </form>
+
+          <div className="flex flex-col space-y-3 font-semibold text-sm border-t border-gray-100 pt-4">
+            {CATEGORIES.map((cat) => (
+              <Link
+                key={cat.name}
+                href={cat.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={cn(
+                  "py-2 px-1 border-b border-gray-50 flex items-center justify-between",
+                  cat.isRed ? "text-[#C8102E] font-bold" : "text-gray-800"
+                )}
+              >
+                <span>{cat.name}</span>
+                <span>→</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
-};
-
-export default Navbar;
+}

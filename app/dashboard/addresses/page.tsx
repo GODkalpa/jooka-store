@@ -1,137 +1,88 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, MapPin, Home, Building } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, MapPin } from 'lucide-react';
 import AddressCard from '@/components/dashboard/AddressCard';
 import AddressModal from '@/components/dashboard/AddressModal';
 import { useAddresses } from '@/lib/context/UserDataContext';
 import { useAuth } from '@/lib/auth/firebase-auth';
 import type { Address } from '@/types/firebase';
+import { api } from '@/lib/api/client';
 
-export default function CustomerAddresses() {
-  const { user, firebaseUser } = useAuth();
-  const { addresses, loading, error, removeAddress, setDefaultAddress, refreshAddresses } = useAddresses();
-  const [showModal, setShowModal] = useState(false);
+export default function AddressesPage() {
+  const { user } = useAuth();
+  const { addresses, loading, refreshAddresses } = useAddresses();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
-
-  // No need for useEffect or fetchAddresses - context handles this
 
   const handleEdit = (address: Address) => {
     setEditingAddress(address);
-    setShowModal(true);
+    setIsModalOpen(true);
   };
 
-  const handleDelete = async (addressId: string) => {
+  const handleAdd = () => {
+    setEditingAddress(null);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this address?')) return;
-
     try {
-      if (!firebaseUser) return;
-
-      const token = await firebaseUser.getIdToken();
-      const response = await fetch(`/api/user/addresses/${addressId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        removeAddress(addressId);
-        alert('Address deleted successfully!');
-      } else {
-        const result = await response.json();
-        alert(`Failed to delete address: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Failed to delete address:', error);
-      alert('Failed to delete address. Please try again.');
+      await api.delete(`/api/user/addresses/${id}`);
+      refreshAddresses();
+    } catch (err) {
+      console.error('Failed to delete address', err);
     }
   };
 
-  const handleSetDefault = async (addressId: string) => {
+  const handleSetDefault = async (id: string) => {
     try {
-      if (!firebaseUser) return;
-
-      const token = await firebaseUser.getIdToken();
-      const response = await fetch(`/api/user/addresses/${addressId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ is_default: true }),
-      });
-
-      if (response.ok) {
-        setDefaultAddress(addressId);
-        alert('Default address updated successfully!');
-      } else {
-        const result = await response.json();
-        alert(`Failed to set default address: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Failed to set default address:', error);
-      alert('Failed to set default address. Please try again.');
+      await api.put(`/api/user/addresses/${id}`, { isDefault: true });
+      refreshAddresses();
+    } catch (err) {
+      console.error('Failed to set default address', err);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-900/20 border border-red-500 rounded-lg p-4">
-        <p className="text-red-400">Error: {error}</p>
+      <div className="space-y-6 animate-pulse">
+        <div className="flex justify-between items-center mb-8">
+          <div className="h-8 bg-gray-200 rounded w-32"></div>
+          <div className="h-10 bg-gray-200 rounded w-32"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+             <div key={i} className="h-40 bg-gray-200 rounded-lg"></div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gold">Shipping Addresses</h1>
-          <p className="text-gray-400 mt-1">Manage your delivery addresses</p>
-        </div>
-        <button 
-          onClick={() => {
-            setEditingAddress(null);
-            setShowModal(true);
-          }}
-          className="btn-primary flex items-center"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Address
+    <div>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Addresses</h1>
+        <button onClick={handleAdd} className="btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Add address
         </button>
       </div>
 
-      {/* Addresses Grid */}
-      {addresses.length === 0 ? (
-        <div className="bg-charcoal rounded-lg border border-gold/20 p-12 text-center">
-          <MapPin className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">No addresses saved</h3>
-          <p className="text-gray-400 mb-6">
-            Add your first shipping address to make checkout faster
-          </p>
-          <button 
-            onClick={() => {
-              setEditingAddress(null);
-              setShowModal(true);
-            }}
-            className="btn-primary"
-          >
-            Add Your First Address
+      {!addresses || addresses.length === 0 ? (
+        <div className="border border-dashed border-gray-300 rounded-lg p-12 flex flex-col items-center justify-center text-center">
+          <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+            <MapPin className="w-6 h-6 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-1">No addresses saved</h3>
+          <p className="text-sm text-gray-500 mb-6">Add an address so we can deliver your orders quickly.</p>
+          <button onClick={handleAdd} className="btn-primary">
+            Add your first address
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {addresses.map((address) => (
             <AddressCard
               key={address.id}
@@ -144,17 +95,12 @@ export default function CustomerAddresses() {
         </div>
       )}
 
-      {/* Address Modal */}
-      {showModal && (
+      {isModalOpen && (
         <AddressModal
           address={editingAddress}
-          onClose={() => {
-            setShowModal(false);
-            setEditingAddress(null);
-          }}
+          onClose={() => setIsModalOpen(false)}
           onSuccess={() => {
-            setShowModal(false);
-            setEditingAddress(null);
+            setIsModalOpen(false);
             refreshAddresses();
           }}
         />

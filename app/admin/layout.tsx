@@ -1,86 +1,65 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth/firebase-auth';
-import AdminSidebar from '@/components/dashboard/AdminSidebar';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, isAuthenticated, isAdmin } = useAuth();
-  const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [status, setStatus] = useState('Authenticating...');
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        router.push('/auth/signin?error=AdminRequired');
-        return;
+    const medusaBackendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000';
+
+    async function authenticateAndRedirect() {
+      const medusaToken = localStorage.getItem('medusa_jwt');
+
+      if (medusaToken) {
+        localStorage.removeItem('medusa_jwt'); // consume the one-time token
+
+        try {
+          // Step 1: Create a session cookie on the Medusa backend (port 9000)
+          // AUTH_CORS includes localhost:3000, so this cross-origin request is allowed
+          // credentials: 'include' ensures the Set-Cookie from port 9000 is stored
+          setStatus('Creating admin session...');
+          const sessionRes = await fetch(`${medusaBackendUrl}/auth/session`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${medusaToken}`,
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include', // This is critical — stores the session cookie for port 9000
+          });
+
+          if (sessionRes.ok) {
+            // Session cookie is now set for localhost:9000. Redirect to admin.
+            setStatus('Opening Medusa Admin Dashboard...');
+            window.location.href = `${medusaBackendUrl}/app`;
+            return;
+          } else {
+            console.warn('Session creation failed:', sessionRes.status);
+          }
+        } catch (err) {
+          console.warn('SSO session creation error:', err);
+        }
       }
 
-      if (!isAdmin) {
-        router.push('/auth/signin?error=AdminRequired');
-        return;
-      }
+      // Fallback: no token or session creation failed — go to Medusa login
+      setStatus('Redirecting to Medusa Admin...');
+      window.location.href = `${medusaBackendUrl}/app`;
     }
-  }, [isLoading, isAuthenticated, isAdmin, router]);
 
-  // Show loading while checking authentication
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-gold">Loading...</div>
-      </div>
-    );
-  }
-
-  // Show nothing while redirecting
-  if (!isAuthenticated || !isAdmin) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-gold">Redirecting...</div>
-      </div>
-    );
-  }
+    authenticateAndRedirect();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-black">
-      <AdminSidebar 
-        isOpen={sidebarOpen} 
-        onClose={() => setSidebarOpen(false)} 
-      />
-      
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-      
-      <div className="lg:ml-64">
-        {/* Mobile header */}
-        <div className="lg:hidden bg-charcoal border-b border-gold/20 px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="text-gold hover:text-gold/80"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <h1 className="text-lg font-bold text-gold">Admin Panel</h1>
-          <div className="w-6" /> {/* Spacer for centering */}
-        </div>
-        
-        <main className="p-4 sm:p-6 lg:p-8 overflow-auto">
-          <div className="max-w-full">
-            {children}
-          </div>
-        </main>
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center font-sans text-white">
+      <div className="text-center space-y-4">
+        <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <p className="text-sm font-medium text-amber-400 uppercase tracking-wider">
+          {status}
+        </p>
       </div>
     </div>
   );

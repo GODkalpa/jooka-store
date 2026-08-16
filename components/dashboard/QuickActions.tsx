@@ -1,110 +1,45 @@
 import Link from 'next/link';
-import { 
-  ShoppingCart, 
-  MapPin, 
-  CreditCard, 
-  User, 
-  Package,
-  Settings
-} from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 interface QuickActionsProps {
   cartItemCount: number;
-  hasAddresses: boolean;
-  hasPaymentMethods: boolean;
+  hasAddresses?: boolean;
+  hasPaymentMethods?: boolean;
 }
 
-export default function QuickActions({ 
-  cartItemCount, 
-  hasAddresses, 
-  hasPaymentMethods 
-}: QuickActionsProps) {
-  const actions = [
+export default function QuickActions({ cartItemCount }: QuickActionsProps) {
+  const links = [
     {
-      title: 'View Cart',
-      description: `${cartItemCount} items in cart`,
+      label: 'Shopping bag',
+      count: cartItemCount > 0 ? cartItemCount : null,
       href: '/cart',
-      icon: ShoppingCart,
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-900/20',
-      borderColor: 'border-blue-500/20',
     },
-    {
-      title: 'Manage Addresses',
-      description: hasAddresses ? 'Update addresses' : 'Add first address',
-      href: '/dashboard/addresses',
-      icon: MapPin,
-      color: 'text-green-400',
-      bgColor: 'bg-green-900/20',
-      borderColor: 'border-green-500/20',
-    },
-    {
-      title: 'Payment Methods',
-      description: hasPaymentMethods ? 'Manage cards' : 'Add payment method',
-      href: '/dashboard/payments',
-      icon: CreditCard,
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-900/20',
-      borderColor: 'border-purple-500/20',
-    },
-    {
-      title: 'Update Profile',
-      description: 'Edit personal info',
-      href: '/dashboard/profile',
-      icon: User,
-      color: 'text-gold',
-      bgColor: 'bg-gold/20',
-      borderColor: 'border-gold/20',
-    },
-    {
-      title: 'Browse Products',
-      description: 'Discover new items',
-      href: '/shop',
-      icon: Package,
-      color: 'text-orange-400',
-      bgColor: 'bg-orange-900/20',
-      borderColor: 'border-orange-500/20',
-    },
-    {
-      title: 'Account Settings',
-      description: 'Privacy & security',
-      href: '/dashboard/settings',
-      icon: Settings,
-      color: 'text-gray-400',
-      bgColor: 'bg-gray-900/20',
-      borderColor: 'border-gray-500/20',
-    },
+    { label: 'Edit profile', href: '/dashboard/profile' },
+    { label: 'Account settings', href: '/dashboard/settings' },
   ];
 
   return (
-    <div className="bg-charcoal rounded-lg border border-gold/20">
-      <div className="px-6 py-4 border-b border-gold/20">
-        <h3 className="text-lg font-semibold text-gold">Quick Actions</h3>
+    <section>
+      <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick links</h3>
+      <div className="bg-white rounded-lg border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+        {links.map((link) => (
+          <Link
+            key={link.label}
+            href={link.href}
+            className="flex items-center justify-between px-4 py-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50/60 transition-colors"
+          >
+            <span>{link.label}</span>
+            <div className="flex items-center gap-2">
+              {link.count && (
+                <span className="bg-[#C8102E] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  {link.count}
+                </span>
+              )}
+              <ChevronRight className="w-4 h-4 text-gray-300" />
+            </div>
+          </Link>
+        ))}
       </div>
-      
-      <div className="p-6">
-        <div className="grid grid-cols-1 gap-3">
-          {actions.map((action) => (
-            <Link
-              key={action.title}
-              href={action.href}
-              className={`flex items-center p-3 rounded-lg border ${action.bgColor} ${action.borderColor} hover:bg-opacity-80 transition-colors group`}
-            >
-              <div className={`p-2 rounded-md ${action.bgColor} mr-3`}>
-                <action.icon className={`w-4 h-4 ${action.color}`} />
-              </div>
-              <div className="flex-1">
-                <h4 className="text-sm font-medium text-white group-hover:text-gold transition-colors">
-                  {action.title}
-                </h4>
-                <p className="text-xs text-gray-400">
-                  {action.description}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </div>
+    </section>
   );
 }

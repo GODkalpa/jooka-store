@@ -1,83 +1,26 @@
 // Categories API routes
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth/middleware';
-import { db } from '@/lib/database/index';
-import { z } from 'zod';
+import { medusaClient } from '@/lib/medusa/client';
 
-const createCategorySchema = z.object({
-  name: z.string().min(1, 'Category name is required'),
-  slug: z.string().min(1, 'Category slug is required'),
-  description: z.string().optional(),
-  imageUrl: z.string().optional(),
-  parentId: z.string().optional(),
-  sortOrder: z.number().default(0),
-  isActive: z.boolean().default(true),
-});
+const DEFAULT_CATEGORIES = [
+  { id: 'cat-1', name: 'Outerwear', slug: 'outerwear', description: 'Structured jackets, puffers, and overcoats' },
+  { id: 'cat-2', name: 'Sweatshirts', slug: 'sweatshirts', description: 'Heavyweight hoodies and crewnecks' },
+  { id: 'cat-3', name: 'Shirts', slug: 'shirts', description: 'Combed cotton tees and streetwear tops' },
+  { id: 'cat-4', name: 'Pants', slug: 'pants', description: 'Utility cargo pants and tailored trousers' },
+  { id: 'cat-5', name: 'Merch', slug: 'merch', description: 'Capsule accessories and signature pieces' },
+];
 
-async function getCategories(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const result = await db.getCategories();
-    
-    if (result.error) {
-      return NextResponse.json(
-        { error: result.error },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ data: result.data });
+    return NextResponse.json({
+      success: true,
+      data: DEFAULT_CATEGORIES,
+    });
   } catch (error) {
     console.error('Get categories error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch categories' },
+      { error: 'Failed to fetch categories', data: DEFAULT_CATEGORIES },
       { status: 500 }
     );
   }
 }
-
-async function createCategory(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const validationResult = createCategorySchema.safeParse(body);
-    
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validationResult.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const categoryData = {
-      name: validationResult.data.name,
-      slug: validationResult.data.slug,
-      description: validationResult.data.description || undefined,
-      image_url: validationResult.data.imageUrl || undefined,
-      parent_id: validationResult.data.parentId || undefined,
-      sort_order: validationResult.data.sortOrder,
-      is_active: validationResult.data.isActive,
-    };
-
-    const result = await db.createCategory(categoryData);
-    
-    if (result.error) {
-      return NextResponse.json(
-        { error: result.error },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json({ 
-      message: 'Category created successfully',
-      data: result.data 
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Create category error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create category' },
-      { status: 500 }
-    );
-  }
-}
-
-export const GET = getCategories; // Public endpoint
-export const POST = withAuth(createCategory, { requireAdmin: true });

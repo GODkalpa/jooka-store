@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MessageCircle, Send, Mail, Phone, MapPin } from 'lucide-react';
+import { MessageCircle, Send, Mail, Phone, MapPin, CheckCircle2, Clock } from 'lucide-react';
 import { useAuth } from '@/lib/auth/firebase-auth';
 import { CreateConversationData } from '@/types/firebase';
 
 export default function ContactPage() {
-  const { user, firebaseUser } = useAuth();
+  const { user } = useAuth();
   const [formData, setFormData] = useState<CreateConversationData>({
     subject: '',
     category: 'general',
@@ -23,7 +23,6 @@ export default function ContactPage() {
 
     setIsLoading(true);
     try {
-      const token = user ? await firebaseUser?.getIdToken() : null;
       const requestData = {
         ...formData,
         guest_email: !user ? guestEmail : undefined
@@ -32,8 +31,7 @@ export default function ContactPage() {
       const response = await fetch('/api/conversations', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(requestData)
       });
@@ -60,28 +58,27 @@ export default function ContactPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-black text-white">
-        <div className="max-w-4xl mx-auto px-4 py-16">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <MessageCircle className="w-8 h-8 text-white" />
+      <div className="min-h-screen bg-canvas pt-12 pb-24 font-sans text-black">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+          <div className="bg-white border border-border-muted rounded-xl p-8 sm:p-10 text-center shadow-sm">
+            <div className="w-16 h-16 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 className="w-8 h-8 stroke-[1.5]" />
             </div>
-            <h1 className="text-3xl font-bold text-gold mb-4">Message Sent!</h1>
-            <p className="text-gray-400 mb-8">
-              Thank you for contacting us. We've received your message and will respond within 24 hours.
+            <h1 className="text-3xl font-bold tracking-tight text-black mb-3">Message Sent!</h1>
+            <p className="text-sm text-neutral-600 max-w-md mx-auto mb-8 leading-relaxed">
+              Thank you for contacting JOOKA Customer Service. We have received your message and will respond within 24 hours.
             </p>
             {user ? (
               <a
-                href="/dashboard/messages"
-                className="bg-gold text-black px-6 py-3 rounded-lg hover:bg-gold/90 transition-colors inline-flex items-center"
+                href="/dashboard"
+                className="inline-flex items-center justify-center px-6 py-3.5 bg-[#C8102E] text-white text-xs font-semibold uppercase tracking-widest hover:bg-[#A60C24] transition-colors shadow-sm rounded-lg"
               >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                View Your Messages
+                Go to Account Dashboard
               </a>
             ) : (
               <a
                 href="/"
-                className="bg-gold text-black px-6 py-3 rounded-lg hover:bg-gold/90 transition-colors"
+                className="inline-flex items-center justify-center px-6 py-3.5 bg-black text-white text-xs font-semibold uppercase tracking-widest hover:bg-neutral-800 transition-colors shadow-sm"
               >
                 Return to Home
               </a>
@@ -93,32 +90,44 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gold mb-4">Contact Us</h1>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Have a question or need support? We're here to help. Send us a message and we'll get back to you as soon as possible.
+    <div className="min-h-screen bg-canvas pt-8 pb-24 font-sans text-black">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 space-y-2">
+          <span className="inline-block bg-black text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full tracking-widest">
+            Client Relations & Support
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-black">
+            Contact Us
+          </h1>
+          <p className="text-sm text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+            Have a question about orders, sizing, or custom collections? Send us a message and our support team will assist you promptly.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Contact Form */}
-          <div className="bg-charcoal rounded-lg border border-gold/20 p-8">
-            <h2 className="text-2xl font-semibold text-gold mb-6">Send us a message</h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="lg:col-span-7 bg-white rounded-xl border border-border-muted p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="border-b border-border-muted pb-4">
+              <h2 className="text-lg font-bold text-black uppercase tracking-wider">
+                Send Us a Message
+              </h2>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Fill out the details below and we will get back to you shortly.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
               {!user && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Your Email *
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Your Email Address <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
                     value={guestEmail}
                     onChange={(e) => setGuestEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-black border border-gold/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold"
-                    placeholder="your.email@example.com"
+                    className="w-full px-3.5 py-2.5 bg-white border border-neutral-300 rounded-md text-xs text-black placeholder-neutral-400 focus:border-black focus:ring-1 focus:ring-black outline-none transition-all"
+                    placeholder="name@example.com"
                     required
                     disabled={isLoading}
                   />
@@ -126,65 +135,65 @@ export default function ContactPage() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Subject *
+                <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                  Subject <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.subject}
                   onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-                  className="w-full px-4 py-3 bg-black border border-gold/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold"
-                  placeholder="What can we help you with?"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-300 rounded-md text-xs text-black placeholder-neutral-400 focus:border-black focus:ring-1 focus:ring-black outline-none transition-all"
+                  placeholder="How can we help you?"
                   required
                   disabled={isLoading}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
                     Category
                   </label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as any }))}
-                    className="w-full px-4 py-3 bg-black border border-gold/20 rounded-lg text-white focus:outline-none focus:border-gold"
+                    className="w-full px-3.5 py-2.5 bg-white border border-neutral-300 rounded-md text-xs text-black focus:border-black focus:ring-1 focus:ring-black outline-none transition-all"
                     disabled={isLoading}
                   >
-                    <option value="general">General Question</option>
-                    <option value="order">Order Issue</option>
+                    <option value="general">General Inquiry</option>
+                    <option value="order">Order & Delivery Issue</option>
                     <option value="technical">Technical Support</option>
-                    <option value="billing">Billing Question</option>
+                    <option value="billing">Billing & Exchange</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
                     Priority
                   </label>
                   <select
                     value={formData.priority}
                     onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as any }))}
-                    className="w-full px-4 py-3 bg-black border border-gold/20 rounded-lg text-white focus:outline-none focus:border-gold"
+                    className="w-full px-3.5 py-2.5 bg-white border border-neutral-300 rounded-md text-xs text-black focus:border-black focus:ring-1 focus:ring-black outline-none transition-all"
                     disabled={isLoading}
                   >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
+                    <option value="low">Low Priority</option>
+                    <option value="medium">Medium Priority</option>
+                    <option value="high">High Priority</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Message *
+                <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                  Message <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={formData.initial_message}
                   onChange={(e) => setFormData(prev => ({ ...prev, initial_message: e.target.value }))}
-                  className="w-full px-4 py-3 bg-black border border-gold/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold"
-                  placeholder="Please describe your question or issue in detail..."
-                  rows={6}
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-300 rounded-md text-xs text-black placeholder-neutral-400 focus:border-black focus:ring-1 focus:ring-black outline-none transition-all"
+                  placeholder="Please provide as much detail as possible..."
+                  rows={5}
                   required
                   disabled={isLoading}
                 />
@@ -193,73 +202,76 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={!formData.subject.trim() || !formData.initial_message.trim() || (!user && !guestEmail.trim()) || isLoading}
-                className="w-full bg-gold text-black px-6 py-3 rounded-lg hover:bg-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full py-3.5 bg-black text-white text-xs font-semibold uppercase tracking-widest hover:bg-neutral-800 transition-colors shadow-sm rounded-md flex items-center justify-center space-x-2 border border-black disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
-                  'Sending...'
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Sending Message...</span>
+                  </>
                 ) : (
                   <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Send Message
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Send Message</span>
                   </>
                 )}
               </button>
             </form>
           </div>
 
-          {/* Contact Information */}
-          <div className="space-y-8">
-            <div className="bg-charcoal rounded-lg border border-gold/20 p-8">
-              <h2 className="text-2xl font-semibold text-gold mb-6">Get in touch</h2>
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-gold/10 rounded-lg flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-gold" />
+          {/* Contact Details & FAQ Sidebar */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-surface-muted rounded-xl border border-border-muted p-6 shadow-sm space-y-6">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider border-b border-border-muted pb-3">
+                Get in Touch
+              </h2>
+              <div className="space-y-5">
+                <div className="flex items-start space-x-3.5">
+                  <div className="w-9 h-9 bg-white border border-border-muted rounded-lg flex items-center justify-center text-black flex-shrink-0">
+                    <Mail className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white mb-1">Email</h3>
-                    <p className="text-gray-400">support@jooka.com</p>
-                    <p className="text-sm text-gray-500">We respond within 24 hours</p>
+                    <h3 className="text-xs font-bold text-black uppercase">Email Support</h3>
+                    <p className="text-xs text-neutral-700 font-mono mt-0.5">support@jooka.com</p>
+                    <p className="text-[11px] text-neutral-500">We respond within 24 hours</p>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-gold/10 rounded-lg flex items-center justify-center">
-                    <Phone className="w-6 h-6 text-gold" />
+                <div className="flex items-start space-x-3.5">
+                  <div className="w-9 h-9 bg-white border border-border-muted rounded-lg flex items-center justify-center text-black flex-shrink-0">
+                    <Phone className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white mb-1">Phone</h3>
-                    <p className="text-gray-400">+1 (555) 123-4567</p>
-                    <p className="text-sm text-gray-500">Mon-Fri 9AM-6PM EST</p>
+                    <h3 className="text-xs font-bold text-black uppercase">Customer Hotline</h3>
+                    <p className="text-xs text-neutral-700 font-mono mt-0.5">+977 (01) 400-JOOKA</p>
+                    <p className="text-[11px] text-neutral-500">Mon - Fri: 9:00 AM - 6:00 PM</p>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-gold/10 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-gold" />
+                <div className="flex items-start space-x-3.5">
+                  <div className="w-9 h-9 bg-white border border-border-muted rounded-lg flex items-center justify-center text-black flex-shrink-0">
+                    <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white mb-1">Address</h3>
-                    <p className="text-gray-400">123 Business Ave<br />Suite 100<br />New York, NY 10001</p>
+                    <h3 className="text-xs font-bold text-black uppercase">Headquarters</h3>
+                    <p className="text-xs text-neutral-700 mt-0.5">Durbar Marg, Kathmandu<br />Nepal</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-charcoal rounded-lg border border-gold/20 p-8">
-              <h3 className="text-xl font-semibold text-gold mb-4">Frequently Asked Questions</h3>
-              <div className="space-y-4">
+            <div className="bg-white rounded-xl border border-border-muted p-6 shadow-sm space-y-4">
+              <h3 className="text-xs font-bold text-black uppercase tracking-wider border-b border-border-muted pb-3">
+                Frequently Asked Questions
+              </h3>
+              <div className="space-y-3.5 text-xs">
                 <div>
-                  <h4 className="font-medium text-white mb-1">How do I track my order?</h4>
-                  <p className="text-sm text-gray-400">You can track your order in your dashboard under "Orders".</p>
+                  <h4 className="font-bold text-black mb-0.5">How do I track my delivery?</h4>
+                  <p className="text-neutral-600 text-[11px]">Track your active Nepal orders directly in your customer dashboard under "Orders".</p>
                 </div>
-                <div>
-                  <h4 className="font-medium text-white mb-1">What's your return policy?</h4>
-                  <p className="text-sm text-gray-400">We offer 30-day returns on all unused items.</p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-white mb-1">How can I change my order?</h4>
-                  <p className="text-sm text-gray-400">Contact us immediately if you need to modify your order.</p>
+                <div className="border-t border-border-muted pt-3">
+                  <h4 className="font-bold text-black mb-0.5">What is your exchange policy?</h4>
+                  <p className="text-neutral-600 text-[11px]">We offer a 7-day hassle-free size exchange policy across Nepal.</p>
                 </div>
               </div>
             </div>

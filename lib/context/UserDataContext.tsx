@@ -53,7 +53,7 @@ interface UserDataProviderProps {
 }
 
 export function UserDataProvider({ children }: UserDataProviderProps) {
-  const { user, firebaseUser, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,7 +63,7 @@ export function UserDataProvider({ children }: UserDataProviderProps) {
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
-    if (!isLoading && user && firebaseUser) {
+    if (!isLoading && user) {
       // Debounce the API call to prevent rapid successive calls
       timeoutId = setTimeout(() => {
         refreshUserData();
@@ -77,10 +77,10 @@ export function UserDataProvider({ children }: UserDataProviderProps) {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [user, firebaseUser, isLoading]);
+  }, [user, isLoading]);
 
   const refreshUserData = async () => {
-    if (!user || !firebaseUser) return;
+    if (!user) return;
 
     setLoading(true);
     setError(null);

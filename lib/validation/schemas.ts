@@ -144,6 +144,11 @@ export const checkoutFormSchema = z.object({
   address: baseSchemas.address,
   city: baseSchemas.city,
   state: baseSchemas.state,
+  province: z.string().optional(),
+  district: z.string().optional(),
+  wardNumber: z.string().optional(),
+  landmark: z.string().optional(),
+  shippingZone: z.enum(['inside_valley', 'outside_valley']).optional(),
   zipCode: baseSchemas.postalCode.optional(),
   country: baseSchemas.country,
 });

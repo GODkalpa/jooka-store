@@ -1,112 +1,52 @@
 // Authentication debugging utilities
-
 export async function debugAuthState() {
   const debugInfo: any = {
     timestamp: new Date().toISOString(),
     environment: typeof window !== 'undefined' ? 'client' : 'server',
-    errors: []
-  }
+    errors: [],
+  };
 
-  try {
-    // Check if we're on the client side
-    if (typeof window === 'undefined') {
-      debugInfo.errors.push('Running on server side - auth not available')
-      return debugInfo
-    }
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('medusa_jwt') || localStorage.getItem('_medusa_jwt');
+    const userSession = localStorage.getItem('jooka_user_session');
 
-    // Check Firebase config
-    const { auth } = await import('@/lib/firebase/config')
-    const firebaseAuth = auth()
-    
-    debugInfo.firebaseAuth = {
-      exists: !!firebaseAuth,
-      currentUser: !!firebaseAuth?.currentUser,
-      userEmail: firebaseAuth?.currentUser?.email || null,
-      userUid: firebaseAuth?.currentUser?.uid || null,
-      emailVerified: firebaseAuth?.currentUser?.emailVerified || false
-    }
-
-    // Try to get ID token
-    if (firebaseAuth?.currentUser) {
+    debugInfo.tokenExists = !!token;
+    debugInfo.sessionExists = !!userSession;
+    if (userSession) {
       try {
-        const token = await firebaseAuth.currentUser.getIdToken()
-        debugInfo.token = {
-          exists: !!token,
-          length: token?.length || 0,
-          preview: token ? `${token.substring(0, 20)}...` : null
-        }
-      } catch (tokenError) {
-        debugInfo.errors.push(`Token generation failed: ${tokenError}`)
+        debugInfo.sessionUser = JSON.parse(userSession);
+      } catch {
+        debugInfo.sessionUser = null;
       }
     }
-
-    // Check auth context
-    try {
-      // This would require importing the auth context, but we'll skip for now
-      debugInfo.authContext = 'Not checked to avoid circular imports'
-    } catch (contextError) {
-      debugInfo.errors.push(`Auth context error: ${contextError}`)
-    }
-
-  } catch (error) {
-    debugInfo.errors.push(`General error: ${error}`)
   }
 
-  return debugInfo
+  return debugInfo;
 }
 
-export async function testApiCall(endpoint: string = '/api/orders') {
-  const debugInfo = await debugAuthState()
-  
-  if (debugInfo.errors.length > 0) {
-    return {
-      ...debugInfo,
-      apiTest: 'Skipped due to auth errors'
-    }
-  }
-
+export async function testApiCall(endpoint: string = '/api/orders'): Promise<any> {
   try {
-    const { auth } = await import('@/lib/firebase/config')
-    const firebaseAuth = auth()
-    const currentUser = firebaseAuth?.currentUser
-
-    if (!currentUser) {
-      return {
-        ...debugInfo,
-        apiTest: 'No authenticated user for API test'
-      }
-    }
-
-    const token = await currentUser.getIdToken()
-    
     const response = await fetch(endpoint, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    })
-
-    debugInfo.apiTest = {
+    });
+    return {
       endpoint,
       status: response.status,
       ok: response.ok,
-      statusText: response.statusText
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      debugInfo.apiTest.error = errorData
-    } else {
-      const data = await response.json()
-      debugInfo.apiTest.success = true
-      debugInfo.apiTest.dataKeys = Object.keys(data)
-    }
-
+      apiTest: {
+        success: response.ok,
+        error: response.ok ? null : `HTTP ${response.status}`,
+      },
+      errors: response.ok ? [] : [`HTTP ${response.status}`],
+    };
   } catch (error) {
-    debugInfo.apiTest = {
-      error: `API test failed: ${error}`
-    }
+    return {
+      endpoint,
+      apiTest: {
+        success: false,
+        error: (error as Error).message,
+      },
+      errors: [(error as Error).message],
+    };
   }
-
-  return debugInfo
 }

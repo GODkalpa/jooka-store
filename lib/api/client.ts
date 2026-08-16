@@ -1,6 +1,4 @@
 // API client utilities for authenticated requests
-import { getAuth } from 'firebase/auth';
-
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -15,14 +13,17 @@ export class ApiError extends Error {
 // Get the current user's auth token
 async function getAuthToken(): Promise<string | null> {
   try {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    
-    if (!user) {
-      return null;
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('medusa_jwt') || localStorage.getItem('_medusa_jwt');
+      if (token) return token;
+      
+      const userSession = localStorage.getItem('jooka_user_session');
+      if (userSession) {
+        const parsed = JSON.parse(userSession);
+        if (parsed.token) return parsed.token;
+      }
     }
-
-    return await user.getIdToken();
+    return null;
   } catch (error) {
     console.error('Error getting auth token:', error);
     return null;

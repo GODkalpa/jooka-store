@@ -1,349 +1,202 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Camera, Save, User, Phone, Mail, Calendar } from 'lucide-react';
+import { Camera, Save } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/firebase-auth';
 import { validateUserProfileUpdate } from '@/lib/validation/schemas';
 import { api } from '@/lib/api/client';
-import { formatSafeDate } from '@/lib/utils/date';
 
-interface ProfileFormData {
-  fullName: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  dateOfBirth: string;
-}
-
-export default function CustomerProfile() {
-  const { user, firebaseUser, refreshUser } = useAuth();
-  const [profile, setProfile] = useState<ProfileFormData>({
-    fullName: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
-    dateOfBirth: ''
-  });
+export default function ProfilePage() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [imageUploading, setImageUploading] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phone: '',
+    dob: ''
+  });
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user || !firebaseUser) {
-        setLoading(false);
-        return;
-      }
-
+    async function loadProfile() {
+      if (!user) return;
       try {
-        const result = await api.get('/api/user/profile');
-        const profileData = result.data;
-
-        // Set profile data
-        setProfile({
-          fullName: profileData.profile?.full_name ||
-                   `${profileData.profile?.first_name || ''} ${profileData.profile?.last_name || ''}`.trim(),
-          firstName: profileData.profile?.first_name || '',
-          lastName: profileData.profile?.last_name || '',
-          phone: profileData.profile?.phone || '',
-          dateOfBirth: profileData.profile?.date_of_birth || ''
-        });
+        const res = await api.get('/api/user/profile');
+        if (res.data) {
+          setFormData({
+            fullName: res.data.fullName || '',
+            phone: res.data.phone || '',
+            dob: res.data.dob || ''
+          });
+          setAvatar(res.data.photoURL || user.profile?.avatar_url || (user as any).photoURL || null);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Failed to load profile', err);
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchProfile();
+    }
+    loadProfile();
   }, [user]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!user) return;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
-    // Validate form data using centralized schema
-    const validationResult = validateUserProfileUpdate({
-      fullName: profile.fullName,
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      phone: profile.phone,
-      dateOfBirth: profile.dateOfBirth,
-    });
-
-    if (!validationResult.success) {
-      const errorMessages = validationResult.error.errors.map(err => err.message).join(', ');
-      setError(`Validation failed: ${errorMessages}`);
-      return;
-    }
-
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
-
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    const data = new FormData();
+    data.append('file', file);
     try {
-      await api.put('/api/user/profile', {
-        fullName: profile.fullName,
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        phone: profile.phone,
-        dateOfBirth: profile.dateOfBirth,
-      });
-
-      // Refresh user data
-      await refreshUser();
-
-      setSuccess('Profile updated successfully!');
+      const res = await api.post('/api/upload', data);
+      setAvatar(res.data.url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Avatar upload failed', err);
+      setAlert({ type: 'error', message: 'Failed to upload avatar' });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setAlert(null);
+    try {
+      await api.put('/api/user/profile', { ...formData, photoURL: avatar });
+      setAlert({ type: 'success', message: 'Profile updated successfully' });
+    } catch (err: any) {
+      setAlert({ type: 'error', message: err.message || 'Failed to update profile' });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImageUploading(true);
-    setError(null);
-
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'avatar');
-
-      if (!firebaseUser) {
-        throw new Error('User not authenticated');
-      }
-      
-      const token = await firebaseUser.getIdToken();
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const result = await response.json();
-      
-      // Update profile with new avatar URL
-      const token2 = await firebaseUser.getIdToken();
-      const updateResponse = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token2}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          avatar_url: result.url,
-        }),
-      });
-
-      if (updateResponse.ok) {
-        setProfile(prev => prev ? { ...prev, avatar_url: result.url } : prev);
-        setSuccess('Profile picture updated successfully!');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload image');
-    } finally {
-      setImageUploading(false);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="bg-red-900/20 border border-red-500 rounded-lg p-4">
-        <p className="text-red-400">Please sign in to view your profile</p>
+      <div className="space-y-6 animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-48 mb-8"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="h-64 bg-gray-200 rounded-lg"></div>
+          <div className="md:col-span-2 h-64 bg-gray-200 rounded-lg"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gold">Profile Settings</h1>
-        <p className="text-gray-400 mt-1">Manage your personal information</p>
-      </div>
+    <div className="max-w-4xl">
+      <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-8">Profile</h1>
 
-      {/* Success/Error Messages */}
-      {success && (
-        <div className="bg-green-900/20 border border-green-500 rounded-lg p-4">
-          <p className="text-green-400">{success}</p>
-        </div>
-      )}
-      {error && (
-        <div className="bg-red-900/20 border border-red-500 rounded-lg p-4">
-          <p className="text-red-400">{error}</p>
+      {alert && (
+        <div className={`mb-6 p-4 rounded-lg border ${
+          alert.type === 'success' 
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+            : 'bg-red-50 border-red-200 text-red-800'
+        }`}>
+          <p className="text-sm font-medium">{alert.message}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Profile Picture */}
-        <div className="bg-charcoal rounded-lg border border-gold/20 p-6">
-          <h3 className="text-lg font-semibold text-gold mb-4">Profile Picture</h3>
-          
-          <div className="flex flex-col items-center">
-            <div className="relative w-32 h-32 mb-4">
-              {user.profile?.avatar_url ? (
-                <Image
-                  src={user.profile.avatar_url}
-                  alt="Profile"
-                  fill
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gold/20 rounded-full flex items-center justify-center">
-                  <User className="w-16 h-16 text-gold" />
-                </div>
-              )}
-              
-              <label className="absolute bottom-0 right-0 bg-gold text-black p-2 rounded-full cursor-pointer hover:bg-gold/80 transition-colors">
-                <Camera className="w-4 h-4" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={imageUploading}
-                />
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Avatar Card */}
+        <div className="w-full md:w-1/3">
+          <div className="bg-white rounded-lg border border-gray-100 p-6 flex flex-col items-center justify-center hover:shadow-md transition-all duration-200">
+            <div className="relative group cursor-pointer">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border border-gray-200 relative">
+                {avatar ? (
+                  <Image src={avatar} alt="Avatar" fill className="object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    No Avatar
+                  </div>
+                )}
+              </div>
+              <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                <Camera className="w-8 h-8 text-white" />
+                <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
               </label>
             </div>
-            
-            {imageUploading && (
-              <p className="text-sm text-gray-400">Uploading...</p>
-            )}
+            <p className="mt-4 text-xs text-gray-400 text-center">
+              Allowed: JPG, PNG. Max size: 2MB.
+            </p>
           </div>
         </div>
 
         {/* Profile Form */}
-        <div className="lg:col-span-2 bg-charcoal rounded-lg border border-gold/20 p-6">
-          <h3 className="text-lg font-semibold text-gold mb-6">Personal Information</h3>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="w-full md:w-2/3">
+          <div className="bg-white rounded-lg border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <User className="w-4 h-4 inline mr-2" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Full Name
                 </label>
                 <input
                   type="text"
-                  value={profile.fullName}
-                  onChange={(e) => setProfile(prev => ({ ...prev, fullName: e.target.value }))}
-                  className="w-full px-4 py-2 bg-black border border-gold/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-gold"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                   placeholder="Enter your full name"
-                  required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Mail className="w-4 h-4 inline mr-2" />
-                  Email Address
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
                 </label>
                 <input
                   type="email"
-                  value={user.email}
+                  value={user?.email || ''}
                   disabled
-                  className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-md text-gray-400 cursor-not-allowed"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-400 cursor-not-allowed"
                 />
-                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Phone className="w-4 h-4 inline mr-2" />
-                  Phone Number
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
                 </label>
                 <div className="flex">
-                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gold/20 bg-charcoal text-gray-300 text-sm">
+                  <span className="inline-flex items-center px-4 py-2.5 rounded-l-md border border-r-0 border-gray-200 bg-gray-50 text-gray-500 sm:text-sm">
                     +977
                   </span>
                   <input
                     type="tel"
-                    value={profile.phone}
-                    onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                    className="flex-1 px-4 py-2 bg-black border border-gold/20 rounded-r-md text-white placeholder-gray-400 focus:outline-none focus:border-gold"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="flex-1 min-w-0 block w-full px-4 py-2.5 bg-white border border-gray-200 rounded-none rounded-r-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                     placeholder="98XXXXXXXX"
-                    maxLength={10}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Enter 10-digit Nepal mobile number</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Calendar className="w-4 h-4 inline mr-2" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Date of Birth
                 </label>
                 <input
                   type="date"
-                  value={profile.dateOfBirth}
-                  onChange={(e) => setProfile(prev => ({ ...prev, dateOfBirth: e.target.value }))}
-                  className="w-full px-4 py-2 bg-black border border-gold/20 rounded-md text-white focus:outline-none focus:border-gold"
+                  name="dob"
+                  value={formData.dob}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                 />
               </div>
-            </div>
 
-            <div className="pt-6 border-t border-gold/20">
-              <button
-                type="submit"
-                disabled={saving}
-                className="btn-primary flex items-center"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      {/* Account Info */}
-      <div className="bg-charcoal rounded-lg border border-gold/20 p-6">
-        <h3 className="text-lg font-semibold text-gold mb-4">Account Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-          <div>
-            <span className="text-gray-400">Member since:</span>
-            <span className="text-white ml-2">
-              {user.created_at ? formatSafeDate(user.created_at) : 'N/A'}
-            </span>
-          </div>
-          <div>
-            <span className="text-gray-400">Account ID:</span>
-            <span className="text-white ml-2 font-mono">
-              {user.id.slice(-8)}
-            </span>
-          </div>
-          <div>
-            <span className="text-gray-400">Account Type:</span>
-            <span className="text-white ml-2 capitalize">
-              {user.role}
-            </span>
-          </div>
-          <div>
-            <span className="text-gray-400">Email Verified:</span>
-            <span className={`ml-2 ${user.email_verified ? 'text-green-400' : 'text-red-400'}`}>
-              {user.email_verified ? 'Yes' : 'No'}
-            </span>
+              <div className="pt-4 border-t border-gray-100 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

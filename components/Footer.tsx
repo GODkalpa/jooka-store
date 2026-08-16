@@ -1,248 +1,102 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { Instagram, Twitter, Facebook, Mail, MapPin, Phone } from 'lucide-react'
+import JookaLogo from '@/components/JookaLogo'
+import { Instagram, Facebook, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react'
 
 export default function Footer() {
   return (
-    <footer className="relative bg-black border-t border-gold/10">
-      {/* Clean Background */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/98 to-black" />
+    <footer className="w-full bg-[#111827] text-gray-300 font-sans border-t border-gray-800">
 
-      <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-12 py-16">
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
-          {/* Brand Section */}
-          <motion.div
-            className="lg:col-span-2"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <motion.h3
-              className="text-4xl md:text-5xl font-serif font-light text-gold mb-4 tracking-tight"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              viewport={{ once: true }}
-            >
-              JOOKA
-            </motion.h3>
-
-            <motion.p
-              className="text-xl text-ivory/60 mb-6 font-light italic"
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              Natural Elegance
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              whileInView={{ opacity: 1, width: "4rem" }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="h-px bg-gradient-to-r from-gold via-gold/50 to-transparent mb-6"
-            />
-
-            <motion.p
-              className="text-ivory/70 text-lg leading-relaxed font-light max-w-md"
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              viewport={{ once: true }}
-            >
-              Luxury fashion designed with timeless sophistication and sustainable practices.
-              Each piece embodies our commitment to craftsmanship and natural beauty.
-            </motion.p>
-
-            {/* Contact Info */}
-            <motion.div
-              className="mt-8 space-y-3"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <div className="flex items-center space-x-3 text-ivory/60">
-                <MapPin className="w-4 h-4 text-gold/70" />
-                <span className="text-sm font-light">Dharan, Nepal</span>
+      {/* Main Footer Links - Full Width */}
+      <div className="w-full px-4 sm:px-6 lg:px-12 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+          {/* Brand Info & Official Logo */}
+          <div className="lg:col-span-2 space-y-4">
+            <JookaLogo size="lg" />
+            <p className="text-xs sm:text-sm text-gray-400 leading-relaxed max-w-md">
+              Contemporary Nepali streetwear, heavyweight outerwear, denim, and refined capsule collections.
+            </p>
+            
+            <div className="p-4 bg-gray-900/80 rounded-lg border border-gray-800 space-y-1.5 max-w-md">
+              <div className="flex items-center gap-2 text-white font-semibold text-xs uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4 text-[#C8102E]" />
+                <span>JOOKA Collective</span>
               </div>
-              <div className="flex items-center space-x-3 text-ivory/60">
-                <Mail className="w-4 h-4 text-gold/70" />
-                <span className="text-sm font-light">hello@jooka.com</span>
-              </div>
-              <div className="flex items-center space-x-3 text-ivory/60">
-                <Phone className="w-4 h-4 text-gold/70" />
-                <span className="text-sm font-light">+977 123 456 789</span>
-              </div>
-            </motion.div>
-          </motion.div>
+              <p className="text-[11px] text-gray-400 leading-relaxed">
+                Receive early access to seasonal capsule drops, archive previews, and priority Kathmandu Valley dispatch.
+              </p>
+            </div>
+          </div>
 
-          {/* Quick Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            <h4 className="text-gold font-serif font-medium text-lg mb-6 tracking-wide">Shop</h4>
-            <ul className="space-y-4">
-              {['Shop All', 'Dresses', 'Outerwear', 'Accessories', 'New Arrivals'].map((item, index) => (
-                <li
-                  key={item}
-                  className="opacity-0 animate-fade-in-left"
-                  style={{
-                    animationDelay: `${0.3 + index * 0.1}s`,
-                    animationFillMode: 'forwards'
-                  }}
-                >
-                  <Link
-                    href={`/shop${item === 'Shop All' ? '' : `?category=${item.toLowerCase()}`}`}
-                    className="text-ivory/70 hover:text-gold transition-colors duration-300 text-sm font-light tracking-wide group"
-                  >
-                    <span className="group-hover:translate-x-1 transition-transform duration-300 inline-block">
-                      {item}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+          {/* Collections */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-4">
+              Collections
+            </h4>
+            <ul className="space-y-2.5 text-xs text-gray-400">
+              <li><Link href="/shop" className="hover:text-white transition-colors">All Garments</Link></li>
+              <li><Link href="/shop?category=Shirts" className="hover:text-white transition-colors">Shirts & Tees</Link></li>
+              <li><Link href="/shop?category=Sweatshirts" className="hover:text-white transition-colors">Sweatshirts & Fleece</Link></li>
+              <li><Link href="/shop?category=Pants" className="hover:text-white transition-colors">Tailored Pants</Link></li>
+              <li><Link href="/shop?category=Merch" className="hover:text-white transition-colors">Accessories & Merch</Link></li>
+              <li><Link href="/shop?sale=true" className="text-[#C8102E] font-semibold hover:underline">Sale & Archive</Link></li>
             </ul>
-          </motion.div>
+          </div>
 
-          {/* Customer Care */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            viewport={{ once: true }}
-          >
-            <h4 className="text-gold font-serif font-medium text-lg mb-6 tracking-wide">Customer Care</h4>
-            <ul className="space-y-4">
-              {['Size Guide', 'Returns', 'Privacy Policy', 'Contact'].map((item, index) => (
-                <li
-                  key={item}
-                  className="opacity-0 animate-fade-in-left"
-                  style={{
-                    animationDelay: `${0.4 + index * 0.1}s`,
-                    animationFillMode: 'forwards'
-                  }}
-                >
-                  <Link
-                    href={`/${item.toLowerCase().replace(' ', '-')}`}
-                    className="text-ivory/70 hover:text-gold transition-colors duration-300 text-sm font-light tracking-wide group"
-                  >
-                    <span className="group-hover:translate-x-1 transition-transform duration-300 inline-block">
-                      {item}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+          {/* Customer Support */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-4">
+              Client Services
+            </h4>
+            <ul className="space-y-2.5 text-xs text-gray-400">
+              <li><Link href="/shipping-returns" className="hover:text-white transition-colors">Shipping & Courier Zones</Link></li>
+              <li><Link href="/shipping-returns" className="hover:text-white transition-colors">7-Day Exchanges</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Support & Inquiries</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link href="/cart" className="hover:text-white transition-colors">Shopping Bag</Link></li>
             </ul>
-          </motion.div>
-        </div>
+          </div>
 
-        {/* Newsletter Section */}
-        <motion.div
-          className="border-t border-gold/10 mt-16 pt-12"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          viewport={{ once: true }}
-        >
-          <div className="text-center max-w-2xl mx-auto">
-            <motion.h4
-              className="text-2xl md:text-3xl font-serif font-light text-gold mb-4"
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              viewport={{ once: true }}
-            >
-              Stay in Touch
-            </motion.h4>
-
-            <motion.p
-              className="text-ivory/60 text-lg mb-8 font-light"
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              viewport={{ once: true }}
-            >
-              Subscribe to receive updates on new collections and exclusive offers.
-            </motion.p>
-
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              viewport={{ once: true }}
-            >
+          {/* Newsletter */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-4">
+              Capsule Alerts
+            </h4>
+            <p className="text-xs text-gray-400 mb-3 leading-relaxed">
+              Subscribe for release drops, lookbook previews, and promo codes.
+            </p>
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-2">
               <input
                 type="email"
-                placeholder="Enter your email address"
-                className="flex-1 px-6 py-4 bg-black/50 border border-gold/20 text-ivory placeholder-ivory/40 focus:outline-none focus:border-gold/50 transition-colors duration-300 text-sm font-light tracking-wide"
+                placeholder="Enter email address"
+                className="w-full px-3.5 py-2.5 bg-gray-900 border border-gray-700 rounded-md text-xs text-white placeholder-gray-500 focus:outline-none focus:border-white"
               />
-              <motion.button
-                className="px-8 py-4 bg-gold/10 border border-gold/30 text-gold hover:bg-gold hover:text-black transition-all duration-300 text-sm font-medium tracking-[0.1em] uppercase"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-[#C8102E] hover:bg-[#A60C24] text-white text-xs font-semibold uppercase tracking-wider rounded-md transition-colors shadow-xs"
               >
-                Subscribe
-              </motion.button>
-            </motion.div>
+                Join List
+              </button>
+            </form>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Bottom Section */}
-        <motion.div
-          className="border-t border-gold/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          viewport={{ once: true }}
-        >
-          {/* Social Links */}
-          <div className="flex space-x-6 mb-6 md:mb-0">
-            {[
-              { icon: Instagram, href: '#', label: 'Instagram' },
-              { icon: Twitter, href: '#', label: 'Twitter' },
-              { icon: Facebook, href: '#', label: 'Facebook' }
-            ].map((social, index) => (
-              <div
-                key={social.label}
-                className="opacity-0 animate-fade-in-up"
-                style={{
-                  animationDelay: `${0.9 + index * 0.1}s`,
-                  animationFillMode: 'forwards'
-                }}
-              >
-                <a
-                  href={social.href}
-                  className="text-gold/60 hover:text-gold transition-all duration-300 p-2 hover:scale-110 hover:-translate-y-0.5 active:scale-95 transform inline-block"
-                  aria-label={social.label}
-                >
-                  <social.icon className="w-5 h-5" />
-                </a>
-              </div>
-            ))}
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-800 mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <p>© 2026 JOOKA Store Nepal. All rights reserved.</p>
+            <span className="hidden sm:inline">•</span>
+            <Link href="/privacy-policy" className="hover:text-gray-300">Privacy</Link>
+            <Link href="/terms-of-service" className="hover:text-gray-300">Terms</Link>
+            <Link href="/shipping-returns" className="hover:text-gray-300">Delivery & Returns</Link>
           </div>
-
-          {/* Copyright */}
-          <motion.p
-            className="text-ivory/50 text-sm font-light tracking-wide"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1 }}
-            viewport={{ once: true }}
-          >
-            © 2024 JOOKA. All rights reserved.
-          </motion.p>
-        </motion.div>
+          <div className="flex space-x-4">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-900 hover:bg-gray-800 rounded-md text-gray-300 transition-colors" aria-label="Instagram"><Instagram className="w-4 h-4" /></a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-900 hover:bg-gray-800 rounded-md text-gray-300 transition-colors" aria-label="Facebook"><Facebook className="w-4 h-4" /></a>
+          </div>
+        </div>
       </div>
     </footer>
   )

@@ -75,7 +75,7 @@ const statusIcons = {
 };
 
 export default function CustomerOrderDetailPage() {
-  const { user, firebaseUser } = useAuth();
+  const { user } = useAuth();
   const params = useParams();
   const router = useRouter();
   const orderId = params.id as string;
@@ -85,14 +85,16 @@ export default function CustomerOrderDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (orderId && user && firebaseUser) {
+    if (orderId && user) {
       fetchOrder();
+    } else {
+      setLoading(false);
     }
-  }, [orderId, user, firebaseUser]);
+  }, [orderId, user]);
 
   const fetchOrder = async () => {
     try {
-      if (!user || !firebaseUser) {
+      if (!user) {
         throw new Error('User not authenticated');
       }
 

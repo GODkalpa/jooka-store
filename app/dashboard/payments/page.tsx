@@ -1,90 +1,66 @@
 'use client';
 
-import { Banknote, Info, CheckCircle } from 'lucide-react';
+import { Banknote, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
-export default function CustomerPayments() {
-
+export default function PaymentsPage() {
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gold">Payment Method</h1>
-        <p className="text-gray-400 mt-1">Cash on Delivery (COD) - Simple and secure</p>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Payments</h1>
       </div>
 
-      {/* COD Information Card */}
-      <div className="bg-charcoal rounded-lg border border-gold/20 p-8">
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="w-16 h-16 bg-gold/20 rounded-full flex items-center justify-center">
-            <Banknote className="w-8 h-8 text-gold" />
+      <div className="bg-white rounded-lg border border-gray-100 p-6 sm:p-8 hover:shadow-md transition-all duration-200">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <Banknote className="h-8 w-8 text-gray-900" />
           </div>
           <div>
-            <h2 className="text-2xl font-semibold text-white">Cash on Delivery</h2>
-            <p className="text-gray-400">Pay when your order arrives at your doorstep</p>
+            <h2 className="text-lg font-bold text-gray-900">Cash on Delivery (COD)</h2>
+            <p className="text-sm text-gray-600 mt-1">Pay comfortably when your order arrives.</p>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* How it works */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gold flex items-center">
-              <Info className="w-5 h-5 mr-2" />
+            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-[#C8102E]" />
               How it works
             </h3>
-            <ul className="space-y-3 text-gray-300">
-              <li className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>Place your order and select Cash on Delivery</span>
-              </li>
-              <li className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>We prepare and ship your order to your address</span>
-              </li>
-              <li className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>Pay the exact amount in cash when delivered</span>
-              </li>
-              <li className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>Receive your order and payment receipt</span>
-              </li>
+            <ul className="space-y-3">
+              {[
+                'Place your order online without any upfront payment.',
+                'Our delivery partner will bring your package to your address.',
+                'Inspect your package to ensure it is sealed and correct.',
+                'Hand over the cash only when you receive your order.'
+              ].map((text, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <span className="text-sm text-gray-600">{text}</span>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Benefits */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gold">Benefits</h3>
-            <ul className="space-y-3 text-gray-300">
-              <li className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>No need to share card details online</span>
-              </li>
-              <li className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>Inspect your order before payment</span>
-              </li>
-              <li className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>Available across Nepal</span>
-              </li>
-              <li className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>No additional processing fees</span>
-              </li>
+            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-[#C8102E]" />
+              Customer protection
+            </h3>
+            <ul className="space-y-3">
+              {[
+                '100% risk-free shopping experience.',
+                'No hidden charges or unexpected fees.',
+                'Verify quality before parting with your money.',
+                'Easy returns if the product is damaged or defective.'
+              ].map((text, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <span className="text-sm text-gray-600">{text}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
-      </div>
-
-      {/* Important Notes */}
-      <div className="bg-blue-900/20 border border-blue-500/20 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-blue-400 mb-3">Important Notes</h3>
-        <ul className="space-y-2 text-blue-200 text-sm">
-          <li>• Please have the exact amount ready for smooth delivery</li>
-          <li>• COD is available for orders within Nepal only</li>
-          <li>• Our delivery partner will provide you with a payment receipt</li>
-          <li>• If you're not available, please arrange for someone to receive the order</li>
-        </ul>
       </div>
     </div>
   );

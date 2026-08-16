@@ -181,6 +181,55 @@ export function getDistrictsByProvince(provinceCode: string) {
 
 // Helper function to get province by district
 export function getProvinceByDistrict(districtName: string) {
-  const district = NEPAL_DISTRICTS.find(d => d.name === districtName);
+  const district = NEPAL_DISTRICTS.find(d => d.name.toLowerCase() === districtName.toLowerCase());
   return district ? NEPAL_PROVINCES.find(p => p.code === district.province) : null;
 }
+
+// Shipping zones for Nepal
+export const NEPAL_SHIPPING_ZONES = [
+  {
+    id: 'inside_valley',
+    name: 'Inside Kathmandu Valley',
+    subtext: 'Kathmandu, Lalitpur, Bhaktapur',
+    districts: ['Kathmandu', 'Lalitpur', 'Bhaktapur'],
+    baseCost: 100,
+    freeThreshold: 3500,
+    estimatedDays: '1 - 2 Business Days',
+    courier: 'Pathao Express / Direct Rider'
+  },
+  {
+    id: 'outside_valley',
+    name: 'Outside Valley',
+    subtext: 'All other major cities & districts across Nepal',
+    districts: [],
+    baseCost: 200,
+    freeThreshold: 5000,
+    estimatedDays: '3 - 5 Business Days',
+    courier: 'Nepal Can Move / Upaya CityCargo'
+  }
+] as const;
+
+export type ShippingZoneId = 'inside_valley' | 'outside_valley';
+
+/**
+ * Helper function to determine shipping zone by district name
+ */
+export function getShippingZoneByDistrict(districtName?: string): ShippingZoneId {
+  if (!districtName) return 'inside_valley'; // Default to inside valley
+  const valleyDistricts = ['kathmandu', 'lalitpur', 'bhaktapur'];
+  if (valleyDistricts.includes(districtName.trim().toLowerCase())) {
+    return 'inside_valley';
+  }
+  return 'outside_valley';
+}
+
+/**
+ * Calculate shipping fee based on zone ID and order subtotal
+ */
+export function calculateShippingFee(zoneId: ShippingZoneId, subtotal: number): number {
+  const zone = NEPAL_SHIPPING_ZONES.find(z => z.id === zoneId);
+  if (!zone) return 100;
+  if (subtotal >= zone.freeThreshold) return 0;
+  return zone.baseCost;
+}
+

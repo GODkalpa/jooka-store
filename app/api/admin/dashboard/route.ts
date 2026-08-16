@@ -1,59 +1,37 @@
-// Admin dashboard API route
+// Admin dashboard API route secured with Medusa Admin authentication
 import { NextRequest, NextResponse } from 'next/server';
-// import { withAuth } from '@/lib/auth/middleware'; // Temporarily disabled
-import { FirebaseAdminDatabaseService } from '@/lib/database/firebase-admin-service';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth/middleware';
+import { OrderService } from '@/lib/services/order-service';
 
-
-async function getDashboardData(request: NextRequest) {
+async function getDashboardData(request: AuthenticatedRequest) {
   try {
-    console.log('Starting dashboard data fetch...');
-    const adminDb = new FirebaseAdminDatabaseService();
+    const ordersResult = OrderService.getOrders({ limit: 100 });
+    const allOrders = ordersResult.data || [];
 
-    // Get sales analytics for the last 30 days
-    const salesResult = await adminDb.getSalesAnalytics().catch(err => {
-      console.warn('Sales analytics error:', err.message);
-      return { data: null, error: err.message };
-    });
+    const totalOrders = allOrders.length;
+    const totalRevenue = allOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+    const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 
-    // Get low stock products
-    const lowStockResult = await adminDb.getLowStockProducts(10).catch(err => {
-      console.warn('Low stock products error:', err.message);
-      return { data: [], error: err.message };
-    });
-
-    // Get recent orders
-    const recentOrdersResult = await adminDb.getOrders({
-      page: 1,
-      limit: 10,
-    }).catch(err => {
-      console.warn('Recent orders error:', err.message);
-      return { data: [], error: err.message };
-    });
-
-    // Get user statistics using Firebase Admin SDK
-    let userCount = 0;
-    try {
-      const usersResult = await adminDb.getUsers({ limit: 1000 }); // Get user count
-      userCount = usersResult.data?.length || 0;
-    } catch (err) {
-      console.warn('User count error:', err instanceof Error ? err.message : 'Unknown error');
-      userCount = 0;
-    }
+    const recentOrders = allOrders.slice(0, 10);
 
     const dashboardData = {
-      sales: salesResult.data || {
-        summary: { total_orders: 0, total_revenue: 0, avg_order_value: 0 },
+      sales: {
+        summary: {
+          total_orders: totalOrders,
+          total_revenue: totalRevenue,
+          avg_order_value: avgOrderValue,
+        },
         daily_sales: [],
         top_products: [],
       },
-      lowStockProducts: lowStockResult.data || [],
-      recentOrders: recentOrdersResult.data || [],
+      lowStockProducts: [],
+      recentOrders,
       stats: {
-        totalUsers: userCount,
-        totalOrders: salesResult.data?.summary?.total_orders || 0,
-        totalRevenue: salesResult.data?.summary?.total_revenue || 0,
-        avgOrderValue: salesResult.data?.summary?.avg_order_value || 0,
-        lowStockCount: lowStockResult.data?.length || 0,
+        totalUsers: 1,
+        totalOrders,
+        totalRevenue,
+        avgOrderValue,
+        lowStockCount: 0,
       },
     };
 
@@ -61,14 +39,10 @@ async function getDashboardData(request: NextRequest) {
   } catch (error) {
     console.error('Get dashboard data error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch dashboard data', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to fetch dashboard data' },
       { status: 500 }
     );
   }
 }
 
-// Temporarily bypass server-side auth since we're using client-side protection
-// TODO: Implement proper server-side authentication with session tokens
-export async function GET(request: NextRequest) {
-  return getDashboardData(request);
-}
+export const GET = withAuth(getDashboardData, { requireAdmin: true });

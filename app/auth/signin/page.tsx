@@ -3,8 +3,10 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth/firebase-auth';
-import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+
+import JookaLogo from '@/components/JookaLogo';
 
 function SignInContent() {
   const [email, setEmail] = useState('');
@@ -33,7 +35,6 @@ function SignInContent() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      // Redirect based on user role
       if (user.role === 'admin') {
         router.push('/admin/dashboard');
       } else {
@@ -44,13 +45,11 @@ function SignInContent() {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
-    // Clear errors when user starts typing
     if (error) setError('');
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
-    // Clear errors when user starts typing
     if (error) setError('');
   };
 
@@ -67,7 +66,6 @@ function SignInContent() {
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError('Please enter a valid email address');
@@ -79,11 +77,9 @@ function SignInContent() {
     setMessage('');
 
     try {
-      // Sign in with email and password
       const result = await signInWithPassword(email, password);
 
       if (result.success) {
-        // Redirect will be handled by the useEffect hook when user state changes
         setMessage('Signing in...');
       } else {
         setError(result.error || 'Failed to sign in');
@@ -95,131 +91,127 @@ function SignInContent() {
     }
   };
 
-
-
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-md w-full space-y-8"
-      >
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gold mb-2">Welcome Back</h1>
-          <p className="text-gold/70">Sign in to your account</p>
+    <div className="py-12 sm:py-20 px-4 flex items-center justify-center font-sans text-gray-900">
+      <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-sm space-y-6">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center mb-1">
+            <JookaLogo size="md" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
+            Welcome Back
+          </h1>
+          <p className="text-xs text-gray-500">
+            Sign in to access your orders, saved addresses, and profile.
+          </p>
         </div>
 
         {errorParam && (
-          <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-            <p className="text-red-400 text-sm">
-              {errorParam === 'AdminRequired'
-                ? 'Admin access required to view this page'
-                : 'Authentication required'
-              }
-            </p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 font-medium">
+            {errorParam === 'AdminRequired'
+              ? 'Admin access required to view this page'
+              : 'Authentication required to proceed'
+            }
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 font-medium">
+            {error}
+          </div>
+        )}
+
+        {message && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-700 font-medium">
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gold mb-2">
+            <label htmlFor="email" className="block text-xs font-semibold text-gray-700 mb-1">
               Email Address
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gold/50 w-5 h-5" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={handleEmailChange}
                 required
-                className="w-full pl-12 pr-4 py-3 bg-gold/10 border border-gold/30 rounded-lg text-gold placeholder-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-transparent"
-                placeholder="Enter your email"
+                className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all"
+                placeholder="name@example.com"
                 disabled={isLoading}
               />
             </div>
           </div>
 
-          {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gold mb-2">
+            <label htmlFor="password" className="block text-xs font-semibold text-gray-700 mb-1">
               Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gold/50 w-5 h-5" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={handlePasswordChange}
                 required
-                className="w-full pl-12 pr-12 py-3 bg-gold/10 border border-gold/30 rounded-lg text-gold placeholder-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-transparent"
+                className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all"
                 placeholder="Enter your password"
                 disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gold/50 hover:text-gold"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
-          {error && (
-            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-              <p className="text-red-400 text-sm">{error}</p>
-            </div>
-          )}
-
-          {message && (
-            <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
-              <p className="text-green-400 text-sm">{message}</p>
-            </div>
-          )}
-
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gold text-black py-3 px-4 rounded-lg font-medium hover:bg-gold/90 focus:outline-none focus:ring-2 focus:ring-gold/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+            className="w-full py-3 bg-gray-900 hover:bg-[#C8102E] text-white text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors shadow-xs flex items-center justify-center space-x-2 border border-gray-900 hover:border-[#C8102E] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
-                Signing In...
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Signing In...</span>
               </div>
             ) : (
               <>
-                Sign In
-                <ArrowRight className="ml-2 w-5 h-5" />
+                <span>Sign In</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </>
             )}
           </button>
         </form>
 
-        <div className="text-center">
-          <p className="text-gold/70 text-sm">
+        <div className="text-center pt-3 border-t border-gray-100">
+          <p className="text-xs text-gray-600">
             Don't have an account?{' '}
-            <button
-              onClick={() => router.push('/auth/signup')}
-              className="text-gold hover:text-gold/80 font-medium"
+            <Link
+              href="/auth/signup"
+              className="font-bold text-gray-900 hover:text-[#C8102E] hover:underline"
             >
               Sign up here
-            </button>
+            </Link>
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
 
 function LoadingSpinner() {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37]"></div>
+    <div className="py-20 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
     </div>
   );
 }

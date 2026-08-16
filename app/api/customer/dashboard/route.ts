@@ -1,110 +1,42 @@
-// Customer dashboard API route
+// Customer dashboard API route - Live database integration
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase/admin';
-import { getAuth } from 'firebase-admin/auth';
-import { convertObjectDates } from '@/lib/utils/date';
-
-async function getCustomerDashboard(request: NextRequest) {
-  try {
-    console.log('Fetching customer dashboard data...');
-    
-    // Get user from Firebase Auth token
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    let decodedToken;
-    
-    try {
-      decodedToken = await getAuth().verifyIdToken(token);
-    } catch (authError) {
-      console.error('Auth token verification failed:', authError);
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    const userId = decodedToken.uid;
-    const db = getAdminDb();
-
-    // Fetch user data
-    const userDoc = await db.collection('users').doc(userId).get();
-    const userData = userDoc.exists ? convertObjectDates({ id: userDoc.id, ...userDoc.data() }) : null;
-
-    // Fetch user profile
-    const profileSnapshot = await db.collection('profiles').where('user_id', '==', userId).get();
-    const profile = profileSnapshot.empty ? null : convertObjectDates({ id: profileSnapshot.docs[0].id, ...profileSnapshot.docs[0].data() });
-
-    // Fetch recent orders (last 5)
-    const ordersSnapshot = await db.collection('orders')
-      .where('user_id', '==', userId)
-      .orderBy('created_at', 'desc')
-      .limit(5)
-      .get();
-    
-    const recentOrders = ordersSnapshot.docs.map(doc => 
-      convertObjectDates({ id: doc.id, ...doc.data() })
-    );
-
-    // Fetch cart items
-    const cartSnapshot = await db.collection('cart_items')
-      .where('user_id', '==', userId)
-      .get();
-    
-    const cartItems = cartSnapshot.docs.map(doc => convertObjectDates({ id: doc.id, ...doc.data() }));
-    const cartItemCount = cartItems.reduce((sum, item) => sum + ((item as any).quantity || 0), 0);
-
-    // Fetch addresses
-    const addressesSnapshot = await db.collection('addresses')
-      .where('user_id', '==', userId)
-      .get();
-    
-    const addresses = addressesSnapshot.docs.map(doc => convertObjectDates({ id: doc.id, ...doc.data() }));
-
-    // Fetch notifications (unread)
-    const notificationsSnapshot = await db.collection('notifications')
-      .where('user_id', '==', userId)
-      .where('read', '==', false)
-      .get();
-    
-    const notifications = notificationsSnapshot.docs.map(doc => convertObjectDates({ id: doc.id, ...doc.data() }));
-
-    // Calculate stats
-    const stats = {
-      totalOrders: recentOrders.length,
-      cartItems: cartItemCount,
-      savedAddresses: addresses.length,
-      unreadNotifications: notifications.length,
-    };
-
-    const dashboardData = {
-      user: {
-        ...userData,
-        profile,
-        email: decodedToken.email,
-        role: (userData as any)?.role || 'customer'
-      },
-      recentOrders,
-      cart: {
-        items: cartItems,
-        itemCount: cartItemCount,
-      },
-      addresses,
-      paymentMethods: [], // COD only for now
-      notifications,
-      stats,
-    };
-
-    return NextResponse.json({ data: dashboardData });
-  } catch (error) {
-    console.error('Get customer dashboard error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard data', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+import { FirebaseAdminDatabaseService } from '@/lib/database/firebase-admin-service';
 
 export async function GET(request: NextRequest) {
-  return getCustomerDashboard(request);
+  try {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId') || searchParams.get('user_id') || undefined;
+
+    const adminDb = new FirebaseAdminDatabaseService();
+    const ordersResult = await adminDb.getOrders({ userId, limit: 10 });
+    const orders = ordersResult.data || [];
+
+    return NextResponse.json({
+      data: {
+        recentOrders: orders,
+        cart: { items: [], itemCount: 0 },
+        addresses: [],
+        paymentMethods: [{ id: 'cod', type: 'cash_on_delivery', label: 'Cash on Delivery' }],
+        notifications: [],
+        stats: {
+          totalOrders: orders.length,
+          cartItems: 0,
+          savedAddresses: 0,
+          unreadNotifications: 0,
+        },
+      }
+    });
+  } catch (error) {
+    console.error('Customer dashboard fetch error:', error);
+    return NextResponse.json({
+      data: {
+        recentOrders: [],
+        cart: { items: [], itemCount: 0 },
+        addresses: [],
+        paymentMethods: [],
+        notifications: [],
+        stats: { totalOrders: 0, cartItems: 0, savedAddresses: 0, unreadNotifications: 0 },
+      }
+    });
+  }
 }

@@ -3,14 +3,22 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { Minus, Plus, Heart, Share2, ChevronRight, Star } from 'lucide-react'
+import { Minus, Plus, ChevronRight } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
 import ProductCard from '@/components/ProductCard'
+import SizingModal from '@/components/ui/SizingModal'
 import { formatPriceWithSymbol } from '@/lib/utils/currency'
-import { formatNPR } from '@/lib/utils/nepal'
 
-// Types
+interface Variant {
+  id: string
+  title: string
+  sku: string
+  color: string
+  size: string
+  price: number
+  inventory_quantity: number
+}
+
 interface Product {
   id: string
   name: string
@@ -29,6 +37,7 @@ interface Product {
   short_description?: string
   colors?: string[]
   sizes?: string[]
+  variants?: Variant[]
   category?: {
     id: string
     name: string
@@ -56,139 +65,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
   const [quantity, setQuantity] = useState(1)
-  const [variantStock, setVariantStock] = useState<{[key: string]: number}>({})
-  const [checkingStock, setCheckingStock] = useState(false)
+  const [isSizingModalOpen, setIsSizingModalOpen] = useState(false)
 
   const addItem = useCartStore((state) => state.addItem)
 
-  // Check variant stock when color and size are selected
-  const checkVariantStock = async (productId: string, color: string, size: string) => {
-    if (!color || !size) return
-
-    setCheckingStock(true)
-    try {
-      const response = await fetch('/api/variants', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          checks: [{
-            product_id: productId,
-            color,
-            size,
-            requested_quantity: 1
-          }]
-        }),
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        const variantKey = `${productId}-${color}-${size}`
-        setVariantStock(prev => ({
-          ...prev,
-          [variantKey]: result.data?.variant_stock?.[variantKey] || 0
-        }))
-      }
-    } catch (error) {
-      console.error('Failed to check variant stock:', error)
-    } finally {
-      setCheckingStock(false)
-    }
-  }
-
-  // Helper function to get images for the selected color
-  const getImagesForColor = (color: string | null) => {
-    if (!product?.images) {
-      return []
-    }
-
-    // Filter out blob URLs and invalid images
-    const validImages = product.images.filter(img =>
-      img.secure_url &&
-      !img.secure_url.startsWith('blob:') &&
-      img.secure_url !== ''
-    )
-
-
-
-    // If no valid images, return placeholder
-    if (validImages.length === 0) {
-      return [{
-        id: 'placeholder',
-        secure_url: '/placeholder-product.svg',
-        alt_text: product.name || 'Product image',
-        is_primary: true,
-        order: 0,
-        color: color || undefined
-      }]
-    }
-
-    // If no color selected, return all valid images
-    if (!color) return validImages
-
-    // Filter images for the specific color, fallback to general images if none found
-    const colorImages = validImages.filter(img =>
-      img.color === color || (!img.color && color === selectedColor)
-    )
-
-    // If no color-specific images found, return general images (no color assigned)
-    if (colorImages.length === 0) {
-      return validImages.filter(img => !img.color)
-    }
-
-    return colorImages
-  }
-
-  // Get current images based on selected color
-  const currentImages = getImagesForColor(selectedColor)
-
-  // Get the primary image for the selected color
-  const getPrimaryImageForColor = (color: string | null) => {
-    const images = getImagesForColor(color)
-    const primaryImage = images.find(img => img.is_primary)
-    return primaryImage || images[0] || product?.images?.[0]
-  }
-
-  // Get current variant stock
-  const getCurrentVariantStock = () => {
-    if (!product) return null
-    
-    // If product doesn't track variants, use main inventory
-    if (!product.track_variants) {
-      return product.inventory_count || 0
-    }
-    
-    // If tracking variants but no color/size selected, return null
-    if (!selectedColor || !selectedSize) return null
-    
-    const variantKey = `${product.id}-${selectedColor}-${selectedSize}`
-    return variantStock[variantKey]
-  }
-
-  // Check if current variant is available
-  const isCurrentVariantAvailable = () => {
-    if (!product) return false
-    
-    // If not tracking variants, check main inventory
-    if (!product.track_variants) {
-      const mainStock = product.inventory_count || 0
-      return mainStock >= quantity
-    }
-    
-    // If tracking variants, check variant stock
-    const stock = getCurrentVariantStock()
-    return stock == null || stock >= quantity // null/undefined means not checked yet, assume available
-  }
-
-  // Fetch product data
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        // Fetch the specific product
         const productResponse = await fetch(`/api/products/${params.id}`)
         if (!productResponse.ok) {
           throw new Error('Product not found')
@@ -196,13 +82,37 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         const productResult = await productResponse.json()
         setProduct(productResult)
 
-        // Fetch related products (same category, excluding current product)
-        const relatedResponse = await fetch(`/api/products?status=active&limit=3`)
+        // Select default size & color if available and sync main photo
+        if (productResult.sizes?.length) setSelectedSize(productResult.sizes[0])
+        if (productResult.colors?.length) {
+          const defaultColor = productResult.colors[0]
+          setSelectedColor(defaultColor)
+
+          // Sync initial image index to match default color
+          if (productResult.images?.length) {
+            const matchedIndex = productResult.images.findIndex(
+              (img: any) =>
+                img.color?.toLowerCase() === defaultColor.toLowerCase() ||
+                img.secure_url?.toLowerCase().includes(defaultColor.toLowerCase())
+            )
+            if (matchedIndex !== -1) {
+              setSelectedImage(matchedIndex)
+            } else {
+              const colorIdx = productResult.colors?.findIndex((c: string) => c.toLowerCase() === defaultColor.toLowerCase())
+              if (colorIdx !== undefined && colorIdx !== -1 && productResult.images[colorIdx]) {
+                setSelectedImage(colorIdx)
+              }
+            }
+          }
+        }
+
+        // Fetch related products
+        const relatedResponse = await fetch(`/api/products?status=active&limit=4`)
         if (relatedResponse.ok) {
           const relatedResult = await relatedResponse.json()
           const transformedRelated = (relatedResult.data || [])
             .filter((p: any) => p.id !== params.id)
-            .slice(0, 3)
+            .slice(0, 4)
             .map((p: any) => ({
               id: p.id,
               name: p.name,
@@ -222,163 +132,139 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     fetchProduct()
   }, [params.id])
 
-  // Reset selected image when color changes
-  useEffect(() => {
-    setSelectedImage(0)
-  }, [selectedColor])
+  // Compute active variant matching selected color & size
+  const activeVariant = product?.variants?.find(
+    (v) =>
+      (selectedColor ? v.color?.toLowerCase() === selectedColor.toLowerCase() : true) &&
+      (selectedSize ? v.size?.toLowerCase() === selectedSize.toLowerCase() : true)
+  ) || product?.variants?.[0]
 
-  // Check variant stock when both color and size are selected
-  useEffect(() => {
-    if (product && product.track_variants && selectedColor && selectedSize) {
-      checkVariantStock(product.id, selectedColor, selectedSize)
+  const currentPrice = activeVariant?.price || product?.price || 0
+  const currentStock = activeVariant?.inventory_quantity ?? 100
+
+  // Handle color change and automatically switch main image to match selected color
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color)
+
+    if (!product?.images?.length) return
+
+    // 1. Try to find image with matching color field or URL containing color name
+    const matchedIndex = product.images.findIndex(
+      (img) =>
+        img.color?.toLowerCase() === color.toLowerCase() ||
+        img.secure_url?.toLowerCase().includes(color.toLowerCase())
+    )
+
+    if (matchedIndex !== -1) {
+      setSelectedImage(matchedIndex)
+    } else {
+      // 2. Fallback: match by color option array index
+      const colorIdx = product.colors?.findIndex((c) => c.toLowerCase() === color.toLowerCase())
+      if (colorIdx !== undefined && colorIdx !== -1 && product.images[colorIdx]) {
+        setSelectedImage(colorIdx)
+      }
     }
-  }, [product, selectedColor, selectedSize])
+  }
 
   const handleAddToCart = async () => {
     if (!product) return
 
-    // Check stock availability first
-    if (!product.track_variants) {
-      // No variant tracking - check main inventory
-      const mainStock = product.inventory_count || 0
-      if (mainStock < quantity) {
-        alert(`Only ${mainStock} items available`)
-        return
-      }
-    } else {
-      // Variant tracking enabled
-      const requiresSize = product.sizes && product.sizes.length > 0
-      const requiresColor = product.colors && product.colors.length > 0
+    const imageUrl = product.images?.[selectedImage]?.secure_url || product.images?.[0]?.secure_url || '/placeholder-product.svg'
 
-      if (requiresSize && !selectedSize) {
-        alert('Please select a size')
-        return
-      }
-
-      if (requiresColor && !selectedColor) {
-        alert('Please select a color')
-        return
-      }
-
-      // Check variant stock availability
-      if (selectedColor && selectedSize) {
-        const currentStock = getCurrentVariantStock()
-        if (typeof currentStock === 'number' && currentStock < quantity) {
-          alert(`Only ${currentStock} items available for ${selectedColor} ${selectedSize}`)
-          return
-        }
-      }
-    }
-
-    // Get the appropriate image for the selected color
-    const primaryImage = getPrimaryImageForColor(selectedColor)
-    const imageUrl = primaryImage?.secure_url || '/placeholder-product.svg'
-
-    // Add items to cart (the store will handle backend sync)
     for (let i = 0; i < quantity; i++) {
       await addItem({
         id: product.id,
         name: product.name,
-        price: product.price,
+        price: currentPrice,
         image: imageUrl,
         size: selectedSize || undefined,
         color: selectedColor || undefined,
-        colorImageUrl: imageUrl, // Store the color-specific image URL
-        variantKey: `${product.id}-${selectedSize || ''}-${selectedColor || ''}`,
+        colorImageUrl: imageUrl,
+        variantKey: activeVariant?.id || `${product.id}-${selectedSize || ''}-${selectedColor || ''}`,
       })
     }
   }
 
-  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
-              <p className="text-gold">Loading product...</p>
-            </div>
-          </div>
+      <div className="min-h-screen bg-canvas flex items-center justify-center py-20 font-sans">
+        <div className="text-center space-y-3">
+          <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-xs font-medium text-neutral-600 uppercase tracking-wider">Loading garment details...</p>
         </div>
       </div>
     )
   }
 
-  // Error state
   if (error || !product) {
     return (
-      <div className="min-h-screen pt-20 md:pt-24 py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <p className="text-red-400 mb-4">{error || 'Product not found'}</p>
-              <button
-                onClick={() => window.history.back()}
-                className="px-6 py-2 bg-gold text-black rounded hover:bg-gold/80 transition-colors"
-              >
-                Go Back
-              </button>
-            </div>
-          </div>
+      <div className="min-h-screen bg-canvas flex items-center justify-center py-20 font-sans">
+        <div className="text-center space-y-4 max-w-sm px-4">
+          <p className="text-sm text-red-600 font-medium">{error || 'Product not found'}</p>
+          <button
+            onClick={() => window.history.back()}
+            className="px-6 py-2.5 bg-black text-white text-xs font-medium uppercase tracking-wider hover:bg-neutral-800 transition-colors"
+          >
+            Go Back
+          </button>
         </div>
       </div>
     )
   }
 
+  const mainImages = product.images?.length ? product.images : [{ id: '1', secure_url: '/placeholder-product.svg' }]
+
   return (
-    <div className="min-h-screen pt-20 md:pt-24 py-4 md:py-8">
-      <div className="container mx-auto px-4">
-        {/* Breadcrumb Navigation */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-400 mb-6">
-          <Link href="/" className="hover:text-gold transition-colors">Home</Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link href="/shop" className="hover:text-gold transition-colors">Shop</Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gold">{product.name}</span>
+    <div className="min-h-screen bg-canvas text-black font-sans pt-6 pb-20">
+      {/* Sizing Modal */}
+      <SizingModal isOpen={isSizingModalOpen} onClose={() => setIsSizingModalOpen(false)} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <nav className="flex items-center space-x-2 text-xs text-neutral-500 mb-8">
+          <Link href="/" className="hover:text-black transition-colors">Home</Link>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <Link href="/shop" className="hover:text-black transition-colors">Shop</Link>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="text-black font-medium line-clamp-1">{product.name}</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-          {/* Product Images */}
-          <div className="space-y-6">
-            <motion.div
-              className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-charcoal shadow-2xl"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6 }}
-            >
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          {/* Left Column: Image Gallery (7 Cols) */}
+          <div className="lg:col-span-7 flex flex-col md:flex-row-reverse gap-4">
+            {/* Main Featured Image */}
+            <div className="relative flex-1 aspect-square md:aspect-[4/5] bg-white border border-neutral-200 rounded-xl overflow-hidden p-2 sm:p-4 shadow-sm">
               <Image
-                src={currentImages[selectedImage]?.secure_url || currentImages[0]?.secure_url || '/placeholder-product.svg'}
-                alt={`${product.name}${selectedColor ? ` - ${selectedColor}` : ''}`}
+                src={mainImages[selectedImage]?.secure_url || '/placeholder-product.svg'}
+                alt={product.name}
                 fill
-                className="object-cover hover:scale-105 transition-transform duration-500"
+                className="object-contain object-center p-2 transition-all duration-300"
+                priority
               />
+            </div>
 
-              {/* Image overlay with zoom indicator */}
-              <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
-                <div className="bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                  Click to zoom
-                </div>
-              </div>
-            </motion.div>
-
-            {currentImages && currentImages.length > 1 && (
-              <div className="flex space-x-3 overflow-x-auto pb-2">
-                {currentImages.map((image, index) => (
+            {/* Thumbnails */}
+            {mainImages.length > 1 && (
+              <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto max-h-[500px] flex-shrink-0">
+                {mainImages.map((img, idx) => (
                   <button
-                    key={image.id || index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`relative w-24 h-28 flex-shrink-0 rounded-xl overflow-hidden border-3 transition-all duration-300 ${
-                      selectedImage === index
-                        ? 'border-gold shadow-lg shadow-gold/25 scale-105'
-                        : 'border-gray-600 hover:border-gold/50'
+                    key={img.id || idx}
+                    onClick={() => {
+                      setSelectedImage(idx)
+                      if (product?.colors?.[idx]) {
+                        setSelectedColor(product.colors[idx])
+                      }
+                    }}
+                    className={`relative w-16 h-20 bg-white border rounded-md transition-all flex-shrink-0 p-1 ${
+                      selectedImage === idx ? 'border-black ring-1 ring-black shadow-sm' : 'border-neutral-200 hover:border-neutral-400'
                     }`}
                   >
                     <Image
-                      src={image.secure_url}
-                      alt={`${product.name} ${selectedColor ? selectedColor : 'variant'} ${index + 1}`}
+                      src={img.secure_url}
+                      alt={`${product.name} preview ${idx + 1}`}
                       fill
-                      className="object-cover"
+                      className="object-contain p-0.5"
                     />
                   </button>
                 ))}
@@ -386,321 +272,173 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             )}
           </div>
 
-          {/* Product Info */}
-          <motion.div
-            className="space-y-8"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {/* Product Header */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-gold/80 text-sm uppercase tracking-wider font-medium">
-                  {product.category?.name || product.category_name || 'Uncategorized'}
-                </p>
-                <div className="flex items-center space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-gold text-gold" />
-                  ))}
-                  <span className="text-sm text-gray-400 ml-2">(4.8) 124 reviews</span>
-                </div>
-              </div>
-
-              <h1 className="text-4xl md:text-5xl font-serif font-bold text-gold leading-tight">
+          {/* Right Column: Product Specs & Buying (5 Cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="border-b border-neutral-200 pb-6 space-y-3">
+              <span className="text-[10px] font-medium tracking-[0.25em] text-neutral-400 uppercase">
+                {product.category?.name || product.category_name || 'COLLECTION 01'}
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-light tracking-wide text-neutral-900 uppercase">
                 {product.name}
               </h1>
+              <div className="pt-1 flex items-baseline justify-between">
+                <div>
+                  <p className="text-xl font-normal text-neutral-900 tracking-wide">
+                    {formatPriceWithSymbol(currentPrice)}
+                  </p>
+                  <p className="text-[11px] text-neutral-400 font-light mt-0.5 tracking-wider uppercase">
+                    Taxes included • Free Nepal shipping over ₨ 5,000
+                  </p>
+                </div>
 
-              <div className="flex items-center space-x-4">
-                <p className="text-3xl md:text-4xl font-bold text-gold">
-                  {formatPriceWithSymbol(product.price)}
-                </p>
-                <div className="flex items-center space-x-2">
-                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
-                    In Stock
-                  </span>
-                  <span className="bg-gold/20 text-gold px-3 py-1 rounded-full text-sm font-medium">
-                    Free Shipping
-                  </span>
+                {/* Stock Badge */}
+                <div>
+                  {currentStock > 0 ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-medium text-[11px]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      {currentStock} in stock
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 font-medium text-[11px]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                      Out of Stock
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Product Description */}
-            <div className="bg-charcoal/50 rounded-xl p-6 border border-gray-700">
-              <h3 className="text-xl font-serif font-semibold text-gold mb-4">Product Description</h3>
-              {product.description && (
-                <p className="text-gray-300 leading-relaxed text-lg">
-                  {product.description}
-                </p>
-              )}
-              {product.short_description && !product.description && (
-                <p className="text-gray-300 leading-relaxed text-lg">
-                  {product.short_description}
-                </p>
-              )}
+            {/* Description */}
+            <div className="text-xs text-neutral-600 leading-relaxed font-light tracking-wide">
+              {product.description || product.short_description || 'Minimalist relaxed silhouette constructed with premium heavyweight cotton. Features subtle tailored drop shoulders and pre-shrunk finish.'}
             </div>
 
-
-
-            {/* Size Selection */}
-            {product.sizes && product.sizes.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-serif font-semibold text-gold">Size</h3>
-                  <button className="text-sm text-gold hover:text-white transition-colors underline">
-                    Size Guide
-                  </button>
+            {/* Color Selector */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-[11px] font-medium text-neutral-900 uppercase tracking-widest">
+                    COLOR: <span className="text-neutral-500 font-normal">{selectedColor}</span>
+                  </span>
                 </div>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                  {product.sizes.map((size) => (
+                <div className="flex flex-wrap gap-2">
+                  {product.colors.map((color) => (
                     <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-3 border-2 rounded-xl font-semibold transition-all duration-300 ${
-                        selectedSize === size
-                          ? 'border-gold bg-gold text-black shadow-lg shadow-gold/25'
-                          : 'border-gray-600 text-gray-300 hover:border-gold hover:text-gold'
+                      key={color}
+                      onClick={() => handleColorChange(color)}
+                      className={`px-4 py-2 text-[11px] font-medium uppercase tracking-wider transition-all border ${
+                        selectedColor === color
+                          ? 'bg-black text-white border-black shadow-sm'
+                          : 'bg-white text-neutral-700 border-neutral-200 hover:border-black'
                       }`}
                     >
-                      {size}
+                      {color}
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Enhanced Color Selection with Image Previews */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-serif font-semibold text-gold">Color</h3>
-                  {selectedColor && (
-                    <span className="text-sm text-gray-400">
-                      Showing: <span className="text-gold font-medium">{selectedColor}</span>
-                    </span>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {product.colors.map((color) => {
-                    const colorImages = getImagesForColor(color)
-                    const previewImage = colorImages.find(img => img.is_primary) || colorImages[0]
-
-                    return (
-                      <button
-                        key={color}
-                        onClick={() => setSelectedColor(color)}
-                        className={`group relative overflow-hidden border-2 rounded-xl transition-all duration-300 ${
-                          selectedColor === color
-                            ? 'border-gold shadow-lg shadow-gold/25 scale-105'
-                            : 'border-gray-600 hover:border-gold/50 hover:scale-102'
-                        }`}
-                      >
-                        {/* Color preview image */}
-                        {previewImage && (
-                          <div className="w-16 h-16 relative">
-                            <Image
-                              src={previewImage.secure_url}
-                              alt={`${product.name} - ${color}`}
-                              fill
-                              className="object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                          </div>
-                        )}
-
-                        {/* Color name */}
-                        <div className={`px-3 py-2 text-sm font-semibold transition-colors ${
-                          selectedColor === color
-                            ? 'bg-gold text-black'
-                            : 'bg-charcoal/80 text-gray-300 group-hover:text-gold'
-                        }`}>
-                          {color}
-                        </div>
-
-                        {/* Selected indicator */}
-                        {selectedColor === color && (
-                          <div className="absolute top-1 right-1 w-3 h-3 bg-gold rounded-full border-2 border-black" />
-                        )}
-                      </button>
-                    )
-                  })}
-                </div>
-
-                {/* Image count indicator */}
-                {selectedColor && (
-                  <div className="text-xs text-gray-400">
-                    {currentImages.length} image{currentImages.length !== 1 ? 's' : ''} available for {selectedColor}
-                  </div>
-                )}
+            {/* Size Selector */}
+            <div className="space-y-3 pt-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-[11px] font-medium text-neutral-900 uppercase tracking-widest">
+                  SIZE: <span className="text-neutral-500 font-normal">{selectedSize}</span>
+                </span>
+                <button
+                  onClick={() => setIsSizingModalOpen(true)}
+                  className="text-[11px] text-neutral-500 hover:text-black border-b border-neutral-300 pb-0.5 font-light uppercase tracking-wider"
+                >
+                  SIZING GUIDE
+                </button>
               </div>
-            )}
 
-            {/* Quantity */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-serif font-semibold text-gold">Quantity</h3>
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center border-2 border-gray-600 rounded-xl overflow-hidden">
+              <div className="grid grid-cols-4 gap-2">
+                {(product.sizes?.length ? product.sizes : ['S', 'M', 'L', 'XL']).map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`py-3 text-[11px] font-medium uppercase tracking-widest transition-colors border ${
+                      selectedSize === size
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-neutral-700 border-neutral-200 hover:border-black'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quantity Selector */}
+            <div className="space-y-2 pt-2">
+              <span className="text-[11px] font-medium text-neutral-900 uppercase tracking-widest block">QUANTITY</span>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center border border-neutral-200 bg-white">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-3 hover:bg-gold hover:text-black transition-all duration-300"
+                    className="p-2.5 text-neutral-600 hover:text-black transition-colors"
                   >
-                    <Minus className="w-5 h-5" />
+                    <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="px-6 py-3 text-gold font-semibold text-lg min-w-[60px] text-center">
+                  <span className="px-4 py-1.5 text-xs font-medium text-black min-w-[36px] text-center">
                     {quantity}
                   </span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="p-3 hover:bg-gold hover:text-black transition-all duration-300"
+                    className="p-2.5 text-neutral-600 hover:text-black transition-colors"
                   >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <div className="text-sm">
-                  {product.track_variants ? (
-                    // Variant tracking enabled
-                    selectedColor && selectedSize ? (
-                      checkingStock ? (
-                        <p className="text-gray-400">Checking availability...</p>
-                      ) : (
-                        (() => {
-                          const stock = getCurrentVariantStock()
-                          if (stock == null) {
-                            return <p className="text-gray-400">Select variant to check availability</p>
-                          } else if (stock === 0) {
-                            return <p className="text-red-400">Out of stock for this variant</p>
-                          } else if (stock <= 5 && stock > 0) {
-                            return <p className="text-yellow-400">Only <span className="font-semibold">{stock} items</span> left for {selectedColor} {selectedSize}</p>
-                          } else {
-                            return <p className="text-green-400"><span className="font-semibold">{stock} items</span> available for {selectedColor} {selectedSize}</p>
-                          }
-                        })()
-                      )
-                    ) : (
-                      <p className="text-gray-400">Select color and size to check availability</p>
-                    )
-                  ) : (
-                    // No variant tracking - use main inventory
-                    (() => {
-                      const stock = product.inventory_count || 0
-                      if (stock === 0) {
-                        return <p className="text-red-400">Out of stock</p>
-                      } else if (stock <= 5) {
-                        return <p className="text-yellow-400">Only <span className="font-semibold">{stock} items</span> left in stock</p>
-                      } else {
-                        return <p className="text-green-400"><span className="font-semibold">{stock} items</span> available</p>
-                      }
-                    })()
-                  )}
-                </div>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!isCurrentVariantAvailable()}
-                  className={`w-full px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] ${
-                    !isCurrentVariantAvailable()
-                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                      : 'bg-gold text-black hover:bg-gold/90 hover:shadow-lg hover:shadow-gold/25'
-                  }`}
-                >
-                  {(() => {
-                    if (!product.track_variants) {
-                      // No variant tracking - check main inventory
-                      const stock = product.inventory_count || 0
-                      return stock === 0 ? 'Out of Stock' : `Add to Cart - ${formatNPR(product.price * quantity)}`
-                    } else {
-                      // Variant tracking enabled
-                      if (selectedColor && selectedSize) {
-                        const stock = getCurrentVariantStock()
-                        return stock === 0 ? 'Out of Stock' : `Add to Cart - ${formatPriceWithSymbol(product.price * quantity)}`
-                      } else {
-                        return `Add to Cart - ${formatPriceWithSymbol(product.price * quantity)}`
-                      }
-                    }
-                  })()}
-                </button>
-
-                <button className="w-full bg-transparent border-2 border-gold text-gold px-8 py-4 rounded-xl font-bold text-lg hover:bg-gold hover:text-black transition-all duration-300">
-                  Buy Now
-                </button>
-              </div>
-
-              <div className="flex justify-center space-x-8">
-                <button className="flex flex-col items-center space-y-1 text-gold hover:text-white transition-colors group">
-                  <div className="p-3 rounded-full border border-gold group-hover:bg-gold group-hover:text-black transition-all duration-300">
-                    <Heart className="w-5 h-5" />
-                  </div>
-                  <span className="text-sm">Wishlist</span>
-                </button>
-                <button className="flex flex-col items-center space-y-1 text-gold hover:text-white transition-colors group">
-                  <div className="p-3 rounded-full border border-gold group-hover:bg-gold group-hover:text-black transition-all duration-300">
-                    <Share2 className="w-5 h-5" />
-                  </div>
-                  <span className="text-sm">Share</span>
-                </button>
-              </div>
+            {/* CTA Buttons */}
+            <div className="space-y-3 pt-4 border-t border-neutral-200">
+              <button
+                onClick={handleAddToCart}
+                disabled={currentStock <= 0}
+                className={`w-full py-4 text-white text-[11px] font-medium tracking-[0.2em] uppercase transition-colors shadow-sm ${
+                  currentStock > 0 ? 'bg-black hover:bg-neutral-800' : 'bg-neutral-300 cursor-not-allowed'
+                }`}
+              >
+                {currentStock > 0 ? `ADD TO BAG — ${formatPriceWithSymbol(currentPrice * quantity)}` : 'OUT OF STOCK'}
+              </button>
             </div>
 
-          </motion.div>
-        </div>
-
-        {/* Product Specifications */}
-        <div className="mt-16 bg-charcoal/30 rounded-2xl p-8 border border-gray-700">
-          <h2 className="text-3xl font-serif font-bold text-gold mb-8 text-center">
-            Product Specifications
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="flex justify-between py-3 border-b border-gray-600">
-                <span className="text-gray-400">Material</span>
-                <span className="text-white font-medium">100% Premium Cotton</span>
-              </div>
-              <div className="flex justify-between py-3 border-b border-gray-600">
-                <span className="text-gray-400">Fit</span>
-                <span className="text-white font-medium">Regular Fit</span>
-              </div>
-              <div className="flex justify-between py-3 border-b border-gray-600">
-                <span className="text-gray-400">Care Instructions</span>
-                <span className="text-white font-medium">Machine Washable</span>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between py-3 border-b border-gray-600">
-                <span className="text-gray-400">Brand</span>
-                <span className="text-white font-medium">JOOKA</span>
-              </div>
-              <div className="flex justify-between py-3 border-b border-gray-600">
-                <span className="text-gray-400">Country of Origin</span>
-                <span className="text-white font-medium">Made in Nepal</span>
-              </div>
-              <div className="flex justify-between py-3 border-b border-gray-600">
-                <span className="text-gray-400">SKU</span>
-                <span className="text-white font-medium">{product.id}</span>
-              </div>
+            {/* Guarantees */}
+            <div className="space-y-2 pt-4 border-t border-neutral-100 text-[11px] text-neutral-500 font-light tracking-wide">
+              <p className="flex items-center gap-2">
+                <span>•</span>
+                <span>Complimentary Shipping in Nepal on orders over ₨ 5,000</span>
+              </p>
+              <p className="flex items-center gap-2">
+                <span>•</span>
+                <span>7-Day Sizing Exchange Guarantee</span>
+              </p>
+              <p className="flex items-center gap-2">
+                <span>•</span>
+                <span>Handcrafted & Inspected in Nepal</span>
+              </p>
             </div>
           </div>
         </div>
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <section className="mt-20">
+          <section className="mt-24 pt-16 border-t border-neutral-200">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-serif font-bold text-gold mb-4">
-                You May Also Like
+              <span className="text-[10px] font-medium tracking-[0.25em] text-neutral-400 uppercase block mb-1">
+                COMPLEMENTARY STYLES
+              </span>
+              <h2 className="text-xl font-light tracking-[0.15em] text-neutral-900 uppercase">
+                YOU MAY ALSO LIKE
               </h2>
-              <p className="text-gray-400 text-lg">
-                Discover more premium products from our collection
-              </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {relatedProducts.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} product={relatedProduct} />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+              {relatedProducts.map((relProduct) => (
+                <ProductCard key={relProduct.id} product={relProduct} />
               ))}
             </div>
           </section>

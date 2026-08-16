@@ -41,6 +41,11 @@ interface CartStore {
   isSyncing: boolean
   lastSyncTime: number | null
   userId: string | null
+  isDrawerOpen: boolean
+
+  openDrawer: () => void
+  closeDrawer: () => void
+  toggleDrawer: () => void
 
   // Basic cart operations
   addItem: (item: Omit<CartItem, 'quantity'>) => void
@@ -81,7 +86,12 @@ export const useCartStore = create<CartStore>()(
       isSyncing: false,
       lastSyncTime: null,
       userId: null,
+      isDrawerOpen: false,
       onError: undefined,
+
+      openDrawer: () => set({ isDrawerOpen: true }),
+      closeDrawer: () => set({ isDrawerOpen: false }),
+      toggleDrawer: () => set((state) => ({ isDrawerOpen: !state.isDrawerOpen })),
 
       // Basic cart operations
       addItem: async (item) => {
@@ -97,10 +107,12 @@ export const useCartStore = create<CartStore>()(
                 ? { ...cartItem, quantity: cartItem.quantity + 1 }
                 : cartItem
             ),
+            isDrawerOpen: true,
           }))
         } else {
           set((state) => ({
             items: [...state.items, { ...item, quantity: 1, variantKey: itemKey }],
+            isDrawerOpen: true,
           }))
         }
 

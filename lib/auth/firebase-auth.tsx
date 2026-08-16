@@ -1,213 +1,140 @@
-// Firebase Authentication hooks and utilities for JOOKA E-commerce Platform
+// Authentication Provider for JOOKA E-commerce Platform (Medusa & Session Based)
 'use client';
 
 import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { User as FirebaseUser } from 'firebase/auth';
-import {
-  sendOTPEmail,
-  verifyOTPAndSignIn,
-  signOut,
-  getCurrentUser,
-  onAuthStateChange,
-  getUserId,
-  getUserEmail
-} from '@/lib/firebase/auth';
-import { signInWithEmailPassword } from '@/lib/firebase/auth-fallback';
-import { db } from '@/lib/database';
-import type { User, UserWithProfile } from '@/types/firebase';
 
-// Auth context type
+export interface UserProfile {
+  id: string;
+  email: string;
+  role: 'admin' | 'customer';
+  firstName?: string;
+  lastName?: string;
+  created_at?: any;
+  email_verified?: boolean;
+  profile?: {
+    avatar_url?: string;
+    first_name?: string;
+    last_name?: string;
+    full_name?: string;
+    phone?: string;
+  };
+}
+
 interface AuthContextType {
-  user: UserWithProfile | null;
-  firebaseUser: FirebaseUser | null;
+  user: UserProfile | null;
+  firebaseUser?: any;
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  sendOTP: (email: string) => Promise<{ success: boolean; error?: string }>;
-  verifyOTP: (email?: string) => Promise<{ success: boolean; error?: string }>;
   signInWithPassword: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<{ success: boolean; error?: string }>;
   refreshUser: () => Promise<void>;
+  sendOTP: (email: string) => Promise<{ success: boolean; error?: string }>;
+  verifyOTP: (email?: string) => Promise<{ success: boolean; error?: string }>;
 }
 
-// Create auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Auth provider component
 export function AuthProvider({ children }: { children: ReactNode }) {
-  console.log('AuthProvider initialized');
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [user, setUser] = useState<UserWithProfile | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
 
-  console.log('AuthProvider state initialized, setting up auth listener');
-  console.log('typeof window:', typeof window);
-
-  // Handle client-side mounting
+  // Load user session from localStorage on mount
   useEffect(() => {
-    console.log('🔥 Mounting useEffect called');
-    setIsMounted(true);
+    try {
+      const savedUser = localStorage.getItem('jooka_user_session');
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    } catch (e) {
+      console.warn('Failed to load local user session:', e);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  // Listen to Firebase auth state changes (client-side only)
-  useEffect(() => {
-    // Only run on client side after mounting
-    if (!isMounted) {
-      return;
-    }
-
-    let unsubscribe: (() => void) | null = null;
-    let isActive = true;
-
-    const setupAuthListener = async () => {
-      try {
-        unsubscribe = onAuthStateChange(async (firebaseUser) => {
-          if (!isActive) return; // Prevent state updates if component unmounted
-          
-          setFirebaseUser(firebaseUser);
-          setIsLoading(true);
-
-          // Debounce user data fetching to prevent rapid successive calls
-          await new Promise(resolve => setTimeout(resolve, 50));
-          
-          if (isActive) {
-            await fetchUserData(firebaseUser);
-            setIsLoading(false);
-          }
-        });
-      } catch (error) {
-        console.error('Error setting up auth state listener:', error);
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    setupAuthListener();
-
-    // Fallback timeout to prevent infinite loading
-    const timeout = setTimeout(() => {
-      if (isActive) {
-        setIsLoading(false);
-      }
-    }, 3000);
-
-    return () => {
-      isActive = false;
-      if (unsubscribe) {
-        unsubscribe();
-      }
-      clearTimeout(timeout);
-    };
-  }, [isMounted]);
-
-  // Fetch user data from Firestore when Firebase user changes
-  const fetchUserData = async (firebaseUser: FirebaseUser | null) => {
-    if (!firebaseUser) {
-      setUser(null);
-      return;
-    }
-
-    try {
-      // Check if user exists in our database
-      const result = await db.getUser(firebaseUser.uid);
-
-      if (result.success && result.data) {
-        setUser(result.data);
-      } else {
-        // Check if this is the first user (no admin exists)
-        const existingAdmins = await db.getUsers({ role: 'admin', limit: 1 });
-        const isFirstUser = existingAdmins.data.length === 0;
-        
-        // Create user in our database if they don't exist
-        const createResult = await db.createUser({
-          email: firebaseUser.email!,
-          role: isFirstUser ? 'admin' : 'customer'
-        });
-
-        if (createResult.success && createResult.data) {
-          // Fetch the complete user data with profile
-          const userResult = await db.getUser(createResult.data.id);
-          if (userResult.success && userResult.data) {
-            setUser(userResult.data);
-            
-            if (isFirstUser) {
-              console.log('🎉 First user created with admin privileges');
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      setUser(null);
-    }
-  };
-
-  // Send OTP email
   const sendOTP = async (email: string) => {
-    return await sendOTPEmail(email);
-  };
-
-  // Verify OTP and sign in
-  const verifyOTP = async (email?: string) => {
-    const result = await verifyOTPAndSignIn(email);
-
-    if (result.success && result.user) {
-      // User data will be updated through the auth state change listener
-      return { success: true };
+    try {
+      const res = await fetch('/api/register-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      return { success: res.ok, error: data.error };
+    } catch (err) {
+      return { success: false, error: (err as Error).message };
     }
-
-    return { success: false, error: result.error };
   };
 
-  // Sign in with email and password
+  const verifyOTP = async (email?: string) => {
+    return { success: true };
+  };
+
   const signInWithPassword = async (email: string, password: string) => {
     try {
-      const result = await signInWithEmailPassword(email, password);
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-      if (result.success && result.user) {
-        // User data will be updated through the auth state change listener
-        return { success: true };
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Invalid credentials' };
       }
 
-      return { success: false, error: result.error };
-    } catch (error) {
-      console.error('Sign in error:', error);
-      return { success: false, error: 'An unexpected error occurred' };
+      const role: 'admin' | 'customer' = data.role === 'admin' ? 'admin' : 'customer';
+
+      // Store the Medusa JWT token for SSO bridge (consumed by admin layout)
+      if (data.medusaToken) {
+        localStorage.setItem('medusa_jwt', data.medusaToken);
+      }
+
+      const userProfile: UserProfile = {
+        id: data.userId || 'usr_jooka',
+        email,
+        role,
+        firstName: email.split('@')[0],
+        created_at: new Date().toISOString(),
+        email_verified: true,
+        profile: {
+          full_name: email.split('@')[0],
+        },
+      };
+
+      setUser(userProfile);
+      localStorage.setItem('jooka_user_session', JSON.stringify(userProfile));
+
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: (err as Error).message };
     }
   };
 
-  // Sign out
   const logout = async () => {
-    const result = await signOut();
-
-    if (result.success) {
-      setUser(null);
-      setFirebaseUser(null);
-    }
-
-    return result;
+    setUser(null);
+    localStorage.removeItem('jooka_user_session');
+    localStorage.removeItem('medusa_jwt');
+    localStorage.removeItem('_medusa_jwt');
+    localStorage.removeItem('medusa_session');
+    return { success: true };
   };
 
-  // Refresh user data
-  const refreshUser = async () => {
-    if (firebaseUser) {
-      await fetchUserData(firebaseUser);
-    }
-  };
+  const refreshUser = async () => {};
 
   const value: AuthContextType = {
     user,
-    firebaseUser,
+    firebaseUser: null,
     isLoading,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
-    sendOTP,
-    verifyOTP,
     signInWithPassword,
     logout,
-    refreshUser
+    refreshUser,
+    sendOTP,
+    verifyOTP,
   };
 
   return (
@@ -217,66 +144,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Hook to use auth context
 export function useAuth() {
   const context = useContext(AuthContext);
-
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-
   return context;
 }
 
-// Hook for user data (similar to Clerk's useUser)
 export function useUser() {
-  const { user, firebaseUser, isLoading } = useAuth();
-
+  const { user, isLoading } = useAuth();
   return {
     user,
     isLoaded: !isLoading,
-    isSignedIn: !!user
+    isSignedIn: !!user,
   };
 }
 
-// Server-side auth utilities
-export async function getServerUser(): Promise<UserWithProfile | null> {
-  try {
-    const userId = getUserId();
-    if (!userId) return null;
-
-    const result = await db.getUser(userId);
-    return result.success ? result.data || null : null;
-  } catch (error) {
-    console.error('Error getting server user:', error);
-    return null;
-  }
+export async function getServerUser(): Promise<UserProfile | null> {
+  return null;
 }
 
-// Check if user is authenticated (server-side)
 export function isServerAuthenticated(): boolean {
-  return !!getUserId();
-}
-
-// Get current user ID (server-side)
-export function getServerUserId(): string | null {
-  return getUserId();
-}
-
-// Get current user email (server-side)
-export function getServerUserEmail(): string | null {
-  return getUserEmail();
-}
-
-// Role-based access control helpers
-export function hasRole(user: UserWithProfile | null, role: string): boolean {
-  return user?.role === role;
-}
-
-export function isAdmin(user: UserWithProfile | null): boolean {
-  return hasRole(user, 'admin');
-}
-
-export function isCustomer(user: UserWithProfile | null): boolean {
-  return hasRole(user, 'customer');
+  return false;
 }

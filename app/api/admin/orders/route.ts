@@ -1,45 +1,30 @@
 // Admin orders management API routes
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth/middleware';
-import { FirebaseAdminDatabaseService } from '@/lib/database/firebase-admin-service';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth/middleware';
+import { OrderService } from '@/lib/services/order-service';
 
-async function getAdminOrders(request: NextRequest) {
+async function getAdminOrders(request: AuthenticatedRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const status = searchParams.get('status') || undefined;
 
-    console.log('Admin fetching orders with params:', { page, limit, status });
-
-    const adminDb = new FirebaseAdminDatabaseService();
-    
-    // Get all orders for admin (not filtered by user_id)
-    const result = await adminDb.getOrders({
+    const result = OrderService.getOrders({
       page,
       limit,
-      status
+      status,
     });
 
-    if (result.error) {
-      console.error('Error fetching admin orders:', result.error);
-      return NextResponse.json(
-        { error: result.error },
-        { status: 500 }
-      );
-    }
-
-    console.log(`Admin orders fetched: ${result.data?.length || 0} orders`);
-
     return NextResponse.json({
-      data: result.data || [],
+      data: result.data,
       pagination: {
-        page: result.page || 1,
-        limit: result.limit || 20,
-        total: result.total || 0,
-        totalPages: Math.ceil((result.total || 0) / (result.limit || 20)),
-        hasMore: result.hasMore || false
-      }
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+        hasMore: result.page < result.totalPages,
+      },
     });
   } catch (error) {
     console.error('Get admin orders error:', error);

@@ -1,62 +1,230 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FirebaseAdminDatabaseService } from '@/lib/database/firebase-admin-service';
-import { withAuth, AuthenticatedRequest } from '@/lib/auth/middleware';
-import { z } from 'zod';
+import { medusaClient } from '@/lib/medusa/client';
+import fs from 'fs';
+import path from 'path';
 
-// Use admin service for server-side operations
-const adminDb = new FirebaseAdminDatabaseService();
+let mockProductsCache: any[] | null = null;
+function getMockProducts(): any[] {
+  if (mockProductsCache) return mockProductsCache;
+  try {
+    const candidatePath = path.join(process.cwd(), 'scripts', 'mock-products-export.json');
+    if (fs.existsSync(candidatePath)) {
+      const raw = fs.readFileSync(candidatePath, 'utf-8');
+      const data = JSON.parse(raw);
+      mockProductsCache = data.products || [];
+      return mockProductsCache || [];
+    }
+  } catch (err) {
+    // Ignore error
+  }
+  return [];
+}
 
-const updateProductSchema = z.object({
-  name: z.string().min(1).optional(),
-  slug: z.string().min(1).optional(),
-  description: z.string().optional(),
-  shortDescription: z.string().optional(),
-  price: z.number().min(0).optional(),
-  comparePrice: z.number().min(0).optional(),
-  costPrice: z.number().min(0).optional(),
-  categoryId: z.string().optional(),
-  inventoryCount: z.number().min(0).optional(),
-  trackInventory: z.boolean().optional(),
-  trackVariants: z.boolean().optional(),
-  allowBackorder: z.boolean().optional(),
-  weight: z.number().min(0).optional(),
-  dimensions: z.object({
-    length: z.number().min(0),
-    width: z.number().min(0),
-    height: z.number().min(0),
-  }).optional(),
-  images: z.array(z.object({
-    id: z.string(),
-    secure_url: z.string(),
-    publicId: z.string().optional(),
-    width: z.number().optional(),
-    height: z.number().optional(),
-    format: z.string().optional(),
-    color: z.string().optional(),
-    is_primary: z.boolean(),
-  })).optional(),
-  colors: z.array(z.string()).optional(),
-  sizes: z.array(z.string()).optional(),
-  tags: z.array(z.string()).optional(),
-  metaTitle: z.string().optional(),
-  metaDescription: z.string().optional(),
-  status: z.enum(['active', 'inactive', 'out_of_stock']).optional(),
-  featured: z.boolean().optional(),
-});
+const FALLBACK_PRODUCTS = [
+  {
+    id: 'mock-1',
+    name: 'JOOKA Heavyweight Utility Puffer Jacket',
+    slug: 'jooka-heavyweight-utility-puffer-jacket',
+    price: 4999,
+    description: 'Constructed from a matte Japanese ripstop shell with 700-fill down alternative insulation. Engineered for high-altitude wind resistance and tailored street aesthetics.',
+    short_description: 'Matte ripstop insulated jacket with double-pull YKK hardware.',
+    status: 'active',
+    images: [{ id: '1', secure_url: 'https://images.unsplash.com/photo-1544923246-77307dd654cb?w=1200&q=80', is_primary: true }],
+    colors: ['Onyx Black', 'Stone Gray', 'Olive Drab'],
+    sizes: ['S', 'M', 'L', 'XL'],
+    category: { id: 'c1', name: 'Outerwear' },
+  },
+  {
+    id: 'mock-2',
+    name: 'JOOKA Luxe Oversized Fleece Hoodie',
+    slug: 'jooka-luxe-oversized-fleece-hoodie',
+    price: 2999,
+    description: 'Custom milled 450 GSM organic French terry cotton. Features a double-layer structured hood, blind seam cuffs, and subtle tonal chest embroidery.',
+    short_description: '450 GSM heavyweight cotton hoodie in oversized relaxed silhouette.',
+    status: 'active',
+    images: [{ id: '2', secure_url: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?w=1200&q=80', is_primary: true }],
+    colors: ['Vintage Washed Black', 'Off-White', 'Muted Mocha'],
+    sizes: ['S', 'M', 'L', 'XL'],
+    category: { id: 'c2', name: 'Sweatshirts' },
+  },
+  {
+    id: 'mock-3',
+    name: 'JOOKA Vintage Washed Heavy Denim Jacket',
+    slug: 'jooka-vintage-washed-heavy-denim-jacket',
+    price: 3899,
+    description: '14oz rigid Japanese raw denim with hand-distressed vintage wash. Custom embossed gunmetal hardware with dropped shoulder profile.',
+    short_description: '14oz structured denim jacket with custom metal rivets.',
+    status: 'active',
+    images: [{ id: '3', secure_url: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=1200&q=80', is_primary: true }],
+    colors: ['Washed Indigo', 'Faded Charcoal'],
+    sizes: ['S', 'M', 'L', 'XL'],
+    category: { id: 'c1', name: 'Outerwear' },
+  },
+  {
+    id: 'mock-4',
+    name: 'JOOKA Premium Drop Shoulder Graphic Tee',
+    slug: 'jooka-premium-drop-shoulder-graphic-tee',
+    price: 1699,
+    description: '280 GSM luxury combed cotton with high-density archival screen print. Pre-shrunk boxy cut with thick 1-inch ribbed collar.',
+    short_description: '280 GSM heavyweight cotton boxy streetwear tee.',
+    status: 'active',
+    images: [{ id: '4', secure_url: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=1200&q=80', is_primary: true }],
+    colors: ['Pitch Black', 'Raw Cream', 'Sage Green'],
+    sizes: ['S', 'M', 'L', 'XL'],
+    category: { id: 'c3', name: 'Shirts' },
+  },
+  {
+    id: 'mock-5',
+    name: 'JOOKA Tailored Relaxed Fit Cargo Pants',
+    slug: 'jooka-tailored-relaxed-fit-cargo-pants',
+    price: 3299,
+    description: 'Heavyweight cotton twill with articulated knees and discreet 3D cargo pockets. Adjustable toggle hem allowing transition between wide and tapered cuffs.',
+    short_description: 'Articulated utility cargo trousers with toggle-cinch ankles.',
+    status: 'active',
+    images: [{ id: '5', secure_url: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=1200&q=80', is_primary: true }],
+    colors: ['Deep Olive', 'Shadow Black', 'Desert Tan'],
+    sizes: ['30', '32', '34', '36'],
+    category: { id: 'c4', name: 'Pants' },
+  },
+  {
+    id: 'mock-6',
+    name: 'JOOKA Classic Wool Blend Oversized Coat',
+    slug: 'jooka-classic-wool-blend-oversized-coat',
+    price: 6499,
+    description: 'Double-breasted Italian wool blend overcoat with satin lining. Clean notched lapels and rear center vent.',
+    short_description: 'Italian wool blend overcoat with tailored dropped shoulders.',
+    status: 'active',
+    images: [{ id: '6', secure_url: 'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=1200&q=80', is_primary: true }],
+    colors: ['Camel Beige', 'Midnight Black'],
+    sizes: ['S', 'M', 'L', 'XL'],
+    category: { id: 'c1', name: 'Outerwear' },
+  },
+  {
+    id: 'mock-7',
+    name: 'JOOKA Streetwear Essential Crewneck Sweater',
+    slug: 'jooka-streetwear-essential-crewneck-sweater',
+    price: 2499,
+    description: '400 GSM heavyweight brushed fleece with ribbed collar, hem, and side gussets for enhanced drape and movement.',
+    short_description: '400 GSM brushed fleece minimal crewneck.',
+    status: 'active',
+    images: [{ id: '7', secure_url: 'https://images.unsplash.com/photo-1620799140408-edc0dcb6d633?w=1200&q=80', is_primary: true }],
+    colors: ['Heather Gray', 'Black', 'Forest Green'],
+    sizes: ['S', 'M', 'L', 'XL'],
+    category: { id: 'c2', name: 'Sweatshirts' },
+  },
+  {
+    id: 'mock-8',
+    name: 'JOOKA Urban Explorer Waterproof Parka',
+    slug: 'jooka-urban-explorer-waterproof-parka',
+    price: 5499,
+    description: '3-layer waterproof breathable membrane with sealed seams, storm flap closure, and multiple concealed gear pockets.',
+    short_description: 'Fully seam-sealed waterproof technical storm parka.',
+    status: 'active',
+    images: [{ id: '8', secure_url: 'https://images.unsplash.com/photo-1548883354-7622d03aca27?w=1200&q=80', is_primary: true }],
+    colors: ['Matte Black', 'Arctic Gray'],
+    sizes: ['S', 'M', 'L', 'XL'],
+    category: { id: 'c1', name: 'Outerwear' },
+  },
+];
 
-async function getProduct(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const productId = params.id;
-    const result = await adminDb.getProduct(productId);
 
-    if (result.error) {
-      return NextResponse.json(
-        { error: result.error },
-        { status: result.error === 'Product not found' ? 404 : 500 }
-      );
+    // 1. Try fetching from Medusa first
+    try {
+      const medusaResult = await medusaClient.getProducts({ limit: 100 });
+      if (medusaResult && medusaResult.products) {
+        const found = medusaResult.products.find(
+          (p: any) => p.id === productId || p.handle === productId
+        );
+
+        if (found) {
+          const variant = found.variants?.[0];
+          const firstVariantPrice =
+            variant?.calculated_price?.calculated_amount ??
+            variant?.prices?.[0]?.amount ??
+            4500;
+          const mockList = getMockProducts();
+          const mockProduct = mockList.find((p: any) =>
+            p.name?.toLowerCase() === found.title?.toLowerCase() ||
+            found.handle?.includes(p.slug)
+          );
+
+          const images = (found.images || []).map((img: any, idx: number) => {
+            const matchedMockImg =
+              mockProduct?.images?.[idx] ||
+              mockProduct?.images?.find((m: any) => m.secure_url === img.url);
+            return {
+              id: img.id,
+              secure_url: img.url || found.thumbnail,
+              color: matchedMockImg?.color || undefined,
+              is_primary: idx === 0,
+            };
+          });
+
+          const variants = (found.variants || []).map((v: any) => {
+            const price =
+              v.calculated_price?.calculated_amount ??
+              v.prices?.[0]?.amount ??
+              firstVariantPrice;
+            let color = '';
+            let size = '';
+            if (v.options) {
+              if (Array.isArray(v.options)) {
+                const colorOpt = v.options.find((o: any) => o.option?.title === 'Color' || o.title === 'Color');
+                const sizeOpt = v.options.find((o: any) => o.option?.title === 'Size' || o.title === 'Size');
+                color = colorOpt?.value || '';
+                size = sizeOpt?.value || '';
+              } else if (typeof v.options === 'object') {
+                color = v.options.Color || v.options.color || '';
+                size = v.options.Size || v.options.size || '';
+              }
+            }
+            return {
+              id: v.id,
+              title: v.title,
+              sku: v.sku,
+              color,
+              size,
+              price,
+              inventory_quantity: v.inventory_quantity ?? 100,
+            };
+          });
+
+          return NextResponse.json({
+            id: found.id,
+            name: found.title,
+            slug: found.handle,
+            description: found.description,
+            short_description: found.description,
+            price: firstVariantPrice,
+            images: images.length > 0 ? images : [{ id: '1', secure_url: found.thumbnail, is_primary: true }],
+            status: 'active',
+            category: { id: 'c1', name: (found as any).categories?.[0]?.name || 'Capsule 01' },
+            colors: (found.options?.find((opt: any) => opt.title === 'Color')?.values || []).map((v: any) => typeof v === 'string' ? v : v?.value || String(v)),
+            sizes: (found.options?.find((opt: any) => opt.title === 'Size')?.values || []).map((v: any) => typeof v === 'string' ? v : v?.value || String(v)),
+            variants,
+          });
+        }
+      }
+    } catch (medusaError) {
+      console.warn('Medusa single product fetch warning:', (medusaError as Error).message);
     }
 
-    return NextResponse.json(result.data);
+    // 2. Fallback to static catalog
+    const fallback = FALLBACK_PRODUCTS.find(p => p.id === productId || p.slug === productId);
+    if (fallback) {
+      return NextResponse.json(fallback);
+    }
+
+    const mockList = getMockProducts();
+    const foundInMock = mockList.find(p => p.id === productId || p.slug === productId);
+    if (foundInMock) {
+      return NextResponse.json(foundInMock);
+    }
+
+    return NextResponse.json({ error: 'Product not found' }, { status: 404 });
   } catch (error) {
     console.error('Get product error:', error);
     return NextResponse.json(
@@ -65,114 +233,3 @@ async function getProduct(request: NextRequest, { params }: { params: { id: stri
     );
   }
 }
-
-async function updateProduct(request: AuthenticatedRequest, { params }: { params: { id: string } }) {
-  try {
-    const productId = params.id;
-    const body = await request.json();
-    
-    const validationResult = updateProductSchema.safeParse(body);
-
-    if (!validationResult.success) {
-      console.error('Product update validation failed:', validationResult.error.errors);
-      return NextResponse.json(
-        { error: 'Validation failed', details: validationResult.error.errors },
-        { status: 400 }
-      );
-    }
-
-    // Convert camelCase to snake_case for database
-    const updateData: any = {};
-    const data = validationResult.data;
-
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.slug !== undefined) updateData.slug = data.slug;
-    if (data.description !== undefined) updateData.description = data.description;
-    if (data.shortDescription !== undefined) updateData.short_description = data.shortDescription;
-    if (data.price !== undefined) updateData.price = data.price;
-    if (data.comparePrice !== undefined) updateData.compare_price = data.comparePrice;
-    if (data.costPrice !== undefined) updateData.cost_price = data.costPrice;
-    if (data.categoryId !== undefined) updateData.category_id = data.categoryId;
-    if (data.inventoryCount !== undefined) updateData.inventory_count = data.inventoryCount;
-    if (data.trackInventory !== undefined) updateData.track_inventory = data.trackInventory;
-    if (data.trackVariants !== undefined) updateData.track_variants = data.trackVariants;
-    if (data.allowBackorder !== undefined) updateData.allow_backorder = data.allowBackorder;
-    if (data.weight !== undefined) updateData.weight = data.weight;
-    if (data.dimensions !== undefined) updateData.dimensions = data.dimensions;
-    if (data.images !== undefined) updateData.images = data.images;
-    if (data.colors !== undefined) updateData.colors = data.colors;
-    if (data.sizes !== undefined) updateData.sizes = data.sizes;
-    if (data.tags !== undefined) updateData.tags = data.tags;
-    if (data.metaTitle !== undefined) updateData.meta_title = data.metaTitle;
-    if (data.metaDescription !== undefined) updateData.meta_description = data.metaDescription;
-    if (data.status !== undefined) updateData.status = data.status;
-    if (data.featured !== undefined) updateData.featured = data.featured;
-
-    const result = await adminDb.updateProduct(productId, updateData);
-
-    if (result.error) {
-      return NextResponse.json(
-        { error: result.error },
-        { status: result.error === 'Product not found after update' ? 404 : 500 }
-      );
-    }
-
-    return NextResponse.json({
-      message: 'Product updated successfully',
-      data: result.data
-    });
-  } catch (error) {
-    console.error('Update product error:', error);
-    return NextResponse.json(
-      { error: 'Failed to update product' },
-      { status: 500 }
-    );
-  }
-}
-
-async function deleteProduct(request: AuthenticatedRequest, { params }: { params: { id: string } }) {
-  try {
-    const productId = params.id;
-    
-    // Check if user is admin
-    if (request.user?.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      );
-    }
-    
-    // Check if product exists first
-    const existingProduct = await adminDb.getProduct(productId);
-    if (existingProduct.error) {
-      return NextResponse.json(
-        { error: existingProduct.error },
-        { status: existingProduct.error === 'Product not found' ? 404 : 500 }
-      );
-    }
-
-    const result = await adminDb.deleteProduct(productId);
-
-    if (result.error) {
-      console.error('Delete product failed:', result.error);
-      return NextResponse.json(
-        { error: result.error },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      message: 'Product deleted successfully'
-    });
-  } catch (error) {
-    console.error('Delete product error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete product' },
-      { status: 500 }
-    );
-  }
-}
-
-export const GET = getProduct; // Public endpoint
-export const PUT = withAuth(updateProduct); // Protected endpoint
-export const DELETE = withAuth(deleteProduct); // Protected endpoint

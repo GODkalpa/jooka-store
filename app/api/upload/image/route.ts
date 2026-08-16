@@ -1,6 +1,6 @@
 // Image upload API route using Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth/middleware';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth/middleware';
 import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
@@ -10,8 +10,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-async function uploadImage(request: NextRequest) {
-  const user = (request as any).user;
+async function uploadImage(request: AuthenticatedRequest) {
+  const user = request.user || { id: 'usr_uploader' };
   
   try {
     const formData = await request.formData();
@@ -89,7 +89,7 @@ async function uploadImage(request: NextRequest) {
   }
 }
 
-async function deleteImage(request: NextRequest) {
+async function deleteImage(request: AuthenticatedRequest) {
   try {
     const body = await request.json();
     const { publicId } = body;
@@ -104,7 +104,7 @@ async function deleteImage(request: NextRequest) {
     // Delete from Cloudinary
     const result = await cloudinary.uploader.destroy(publicId);
 
-    if (result.result !== 'ok') {
+    if (result.result !== 'ok' && result.result !== 'not found') {
       return NextResponse.json(
         { error: 'Failed to delete image' },
         { status: 400 }
@@ -125,4 +125,4 @@ async function deleteImage(request: NextRequest) {
 }
 
 export const POST = withAuth(uploadImage);
-export const DELETE = withAuth(deleteImage);
+export const DELETE = withAuth(deleteImage, { requireAdmin: true });

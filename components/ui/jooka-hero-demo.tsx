@@ -11,19 +11,19 @@ const JookaHeroDemo = () => {
   ];
 
   return (
-    <div className="bg-black text-gold">
+    <div className="bg-canvas text-black">
       <MinimalistHero
-        mainText="Discover luxury fashion that defines elegance and sophistication. Each piece is carefully curated to embody timeless style and exceptional quality."
+        mainText="Capsule Edition 01: Curated apparel designed for timeless living. Crafted with heavyweight cotton and precision tailoring in Nepal."
         readMoreLink="/shop"
         imageSrc="/hero-img.png"
-        imageAlt="Luxury fashion model showcasing JOOKA's elegant collection"
+        imageAlt="JOOKA Capsule Collection"
         overlayText={{
-          part1: 'luxury',
-          part2: 'redefined.',
+          part1: 'CAPSULE',
+          part2: 'DROP 01',
         }}
         socialLinks={socialLinks}
-        locationText="Dharan, NP"
-        className="bg-black text-gold font-serif"
+        locationText="Kathmandu / Dharan, NP"
+        className="bg-canvas text-black font-sans border-b border-border-muted"
         showNavbar={false}
       />
     </div>

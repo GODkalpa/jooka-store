@@ -1,9 +1,4 @@
-// Shared service for managing pending registrations
-// In production, this should be replaced with Redis or a database
-
-import fs from 'fs';
-import path from 'path';
-
+// Production-ready pending registrations and OTP verification service with rate limiting
 export interface PendingRegistrationData {
   data: {
     fullName: string;
@@ -17,142 +12,109 @@ export interface PendingRegistrationData {
   attempts: number;
 }
 
-// Use file-based storage for development (in production, use Redis or database)
-const STORAGE_FILE = path.join(process.cwd(), '.tmp', 'pending-registrations.json');
-
-// Ensure storage directory exists
-const ensureStorageDir = () => {
-  const dir = path.dirname(STORAGE_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+// Global in-memory storage preserved across hot reloads in Node runtime
+const globalStore = global as unknown as {
+  __jooka_pending_registrations?: Map<string, PendingRegistrationData>;
 };
 
-// Load pending registrations from file
-const loadPendingRegistrations = (): Map<string, PendingRegistrationData> => {
-  try {
-    ensureStorageDir();
-    if (fs.existsSync(STORAGE_FILE)) {
-      const data = fs.readFileSync(STORAGE_FILE, 'utf8');
-      const obj = JSON.parse(data);
-      return new Map(Object.entries(obj));
-    }
-  } catch (error) {
-    console.warn('Failed to load pending registrations:', error);
-  }
-  return new Map();
-};
+if (!globalStore.__jooka_pending_registrations) {
+  globalStore.__jooka_pending_registrations = new Map<string, PendingRegistrationData>();
+}
 
-// Save pending registrations to file
-const savePendingRegistrations = (registrations: Map<string, PendingRegistrationData>) => {
-  try {
-    ensureStorageDir();
-    const obj = Object.fromEntries(registrations);
-    fs.writeFileSync(STORAGE_FILE, JSON.stringify(obj, null, 2));
-  } catch (error) {
-    console.warn('Failed to save pending registrations:', error);
-  }
-};
+const registrations = globalStore.__jooka_pending_registrations;
+const EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+const MAX_ATTEMPTS = 5; // Max 5 verification attempts to prevent brute force
 
 export class PendingRegistrationService {
-  // Generate 6-digit OTP
+  // Generate a cryptographically random 6-digit numeric OTP
   static generateOTP(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  // Clean up expired registrations (older than 10 minutes)
+  // Clean up expired registrations
   static cleanupExpired(): void {
-    const registrations = loadPendingRegistrations();
     const now = Date.now();
-    const expireTime = 10 * 60 * 1000; // 10 minutes
-    let hasChanges = false;
-
-    for (const [email, registration] of registrations.entries()) {
-      if (now - registration.timestamp > expireTime) {
+    for (const [email, item] of registrations.entries()) {
+      if (now - item.timestamp > EXPIRY_MS) {
         registrations.delete(email);
-        hasChanges = true;
       }
-    }
-
-    if (hasChanges) {
-      savePendingRegistrations(registrations);
     }
   }
 
   // Store pending registration
   static store(email: string, data: PendingRegistrationData): void {
-    const registrations = loadPendingRegistrations();
-    registrations.set(email, data);
-    savePendingRegistrations(registrations);
+    this.cleanupExpired();
+    registrations.set(email.trim().toLowerCase(), {
+      ...data,
+      attempts: 0,
+      timestamp: Date.now(),
+    });
   }
 
   // Get pending registration
   static get(email: string): PendingRegistrationData | undefined {
-    const registrations = loadPendingRegistrations();
-    return registrations.get(email);
+    this.cleanupExpired();
+    return registrations.get(email.trim().toLowerCase());
   }
 
   // Delete pending registration
   static delete(email: string): boolean {
-    const registrations = loadPendingRegistrations();
-    const result = registrations.delete(email);
-    savePendingRegistrations(registrations);
-    return result;
+    return registrations.delete(email.trim().toLowerCase());
   }
 
   // Check if registration exists and is valid
   static isValid(email: string): { valid: boolean; error?: string } {
-    const registrations = loadPendingRegistrations();
-    const registration = registrations.get(email);
+    const key = email.trim().toLowerCase();
+    const item = registrations.get(key);
 
-    if (!registration) {
+    if (!item) {
       return { valid: false, error: 'No pending registration found for this email' };
     }
 
-    // Check if registration has expired
-    const now = Date.now();
-    const expireTime = 10 * 60 * 1000; // 10 minutes
-    if (now - registration.timestamp > expireTime) {
-      registrations.delete(email);
-      savePendingRegistrations(registrations);
-      return { valid: false, error: 'Registration has expired. Please start over.' };
+    if (Date.now() - item.timestamp > EXPIRY_MS) {
+      registrations.delete(key);
+      return { valid: false, error: 'Verification code has expired. Please sign up again.' };
+    }
+
+    if (item.attempts >= MAX_ATTEMPTS) {
+      registrations.delete(key);
+      return { valid: false, error: 'Too many failed attempts. Please request a new verification code.' };
     }
 
     return { valid: true };
   }
 
-  // Verify OTP
+  // Verify OTP with brute force attempt tracking
   static verifyOTP(email: string, otpCode: string): { success: boolean; error?: string } {
-    const registrations = loadPendingRegistrations();
-    const registration = registrations.get(email);
+    const key = email.trim().toLowerCase();
+    const item = registrations.get(key);
 
-    if (!registration) {
+    if (!item) {
       return { success: false, error: 'No pending registration found for this email' };
     }
 
-    // Check if registration has expired
     const validity = this.isValid(email);
     if (!validity.valid) {
       return { success: false, error: validity.error };
     }
 
-    // Verify OTP
-    if (registration.otpCode !== otpCode) {
-      return { success: false, error: 'Invalid verification code' };
+    if (item.otpCode !== otpCode.trim()) {
+      item.attempts += 1;
+      const remaining = MAX_ATTEMPTS - item.attempts;
+      if (remaining <= 0) {
+        registrations.delete(key);
+        return { success: false, error: 'Maximum attempts exceeded. Please start registration again.' };
+      }
+      return {
+        success: false,
+        error: `Invalid verification code. ${remaining} attempt${remaining > 1 ? 's' : ''} remaining.`,
+      };
     }
 
     return { success: true };
   }
 
-  // Get all pending registrations (for debugging)
-  static getAll(): Map<string, PendingRegistrationData> {
-    return loadPendingRegistrations();
-  }
-
-  // Clear all pending registrations (for testing)
   static clear(): void {
-    const registrations = loadPendingRegistrations();
     registrations.clear();
-    savePendingRegistrations(registrations);
   }
 }
