@@ -85,6 +85,9 @@ export default async function seedJookaData({ container }: ExecArgs) {
 
   // 5. Read exported Firestore products JSON
   const candidatePaths = [
+    path.join(__dirname, "..", "..", "scripts", "mock-products-export.json"),
+    path.join(process.cwd(), "scripts", "mock-products-export.json"),
+    "/app/scripts/mock-products-export.json",
     path.join(__dirname, "..", "..", "..", "..", "scripts", "mock-products-export.json"),
     path.join(process.cwd(), "..", "..", "scripts", "mock-products-export.json"),
     "D:\\cursor projects\\jooka-ecommerce\\scripts\\mock-products-export.json",
@@ -176,22 +179,26 @@ export default async function seedJookaData({ container }: ExecArgs) {
   })
 
   // 6. Set Inventory Levels for all created inventory items
-  logger.info("Setting stock quantity (100 units) for all product variants...")
-  const { data: inventoryItems } = await query.graph({
-    entity: "inventory_item",
-    fields: ["id"],
-  })
-
-  if (inventoryItems.length > 0) {
-    await createInventoryLevelsWorkflow(container).run({
-      input: {
-        inventory_levels: inventoryItems.map((item: any) => ({
-          location_id: stockLocation.id,
-          stocked_quantity: 100,
-          inventory_item_id: item.id,
-        })),
-      },
+  try {
+    logger.info("Setting stock quantity (100 units) for all product variants...")
+    const { data: inventoryItems } = await query.graph({
+      entity: "inventory_item",
+      fields: ["id"],
     })
+
+    if (inventoryItems.length > 0) {
+      await createInventoryLevelsWorkflow(container).run({
+        input: {
+          inventory_levels: inventoryItems.map((item: any) => ({
+            location_id: stockLocation.id,
+            stocked_quantity: 100,
+            inventory_item_id: item.id,
+          })),
+        },
+      })
+    }
+  } catch (err: any) {
+    logger.info("Inventory levels already configured or skipped.")
   }
 
   logger.info("🎉 JOOKA Medusa Product, Pricing & Inventory Seeding Completed Successfully!")

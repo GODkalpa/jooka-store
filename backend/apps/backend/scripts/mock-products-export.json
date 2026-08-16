@@ -1,0 +1,456 @@
+{
+  "exportedAt": "2026-07-27T10:48:24.764Z",
+  "categoriesCount": 0,
+  "productsCount": 5,
+  "categories": [],
+  "products": [
+    {
+      "id": "0G2hzWmLK7OP0F7eHn9s",
+      "price": 1000,
+      "colors": [
+        "White",
+        "Red"
+      ],
+      "track_inventory": true,
+      "inventory_count": 21,
+      "short_description": "",
+      "seo_keywords": [],
+      "allow_backorder": false,
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "images": [
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754224884272",
+          "format": "jpg",
+          "height": 1200,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754224884272",
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754224924/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754224884272.jpg",
+          "is_primary": true,
+          "width": 1200,
+          "color": "White"
+        },
+        {
+          "height": 1200,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754224887381",
+          "format": "jpg",
+          "color": "Red",
+          "width": 1200,
+          "is_primary": false,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754224926/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754224887381.jpg",
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754224887381"
+        }
+      ],
+      "status": "active",
+      "slug": "jooka-premium-cotton-polo-shirt",
+      "updated_at": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1754456083,
+        "nanoseconds": 277000000
+      },
+      "description": "Elevate your everyday style with the Jooka Premium Cotton Polo Shirt, crafted for comfort, class, and versatility. This polo features a timeless beige hue, a modern tailored fit, and our signature Jooka logo embroidered on the left chest in a refined gold accent. Whether you're heading to work, attending a casual event, or just relaxing, this shirt keeps you looking sharp without compromising on comfort.",
+      "tags": [],
+      "featured": true,
+      "track_variants": true,
+      "created_at": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1754224889,
+        "nanoseconds": 433000000
+      },
+      "name": "Jooka Premium Cotton Polo Shirt"
+    },
+    {
+      "id": "GJwYmQIZsNmcPD1anzks",
+      "track_inventory": true,
+      "colors": [
+        "Brown",
+        "Black",
+        "Navy",
+        "Gray",
+        "Blue",
+        "Green",
+        "coffee brown"
+      ],
+      "price": 1850,
+      "allow_backorder": false,
+      "sizes": [
+        "L",
+        "M",
+        "XL",
+        "XXL"
+      ],
+      "seo_keywords": [],
+      "short_description": "The Jooka wear is premium outfit. Which is originally made by Nepali garment.",
+      "inventory_count": 96,
+      "updated_at": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1756472953,
+        "nanoseconds": 105000000
+      },
+      "description": "The Jooka wear is premium outfit. Which is originally made by Nepali garment.",
+      "slug": "jooka-trouser",
+      "images": [
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472936113",
+          "format": "jpg",
+          "height": 1200,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472936113",
+          "is_primary": true,
+          "width": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1756472936/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472936113.jpg",
+          "color": "coffee brown"
+        },
+        {
+          "format": "jpg",
+          "height": 1200,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472938039",
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1756472938/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472938039.jpg",
+          "width": 1200,
+          "is_primary": false,
+          "color": "Blue",
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472938039"
+        },
+        {
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472939805",
+          "height": 1200,
+          "format": "jpg",
+          "color": "Green",
+          "is_primary": false,
+          "width": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1756472939/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472939805.jpg",
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472939805"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472941376",
+          "is_primary": false,
+          "width": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1756472941/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472941376.jpg",
+          "color": "Navy",
+          "format": "jpg",
+          "height": 1200,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472941376"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472943924",
+          "width": 1200,
+          "is_primary": false,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1756472944/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472943924.jpg",
+          "color": "Brown",
+          "format": "jpg",
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472943924",
+          "height": 1200
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472946335",
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472946335",
+          "height": 1200,
+          "format": "jpg",
+          "color": "Gray",
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1756472946/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472946335.jpg",
+          "is_primary": false,
+          "width": 1200
+        },
+        {
+          "color": "Black",
+          "is_primary": false,
+          "width": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1756472948/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472948335.jpg",
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472948335",
+          "height": 1200,
+          "format": "jpg",
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472948335"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472950588",
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472950588",
+          "height": 1200,
+          "format": "jpg",
+          "color": "coffee brown",
+          "is_primary": false,
+          "width": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1756472950/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1756472950588.jpg"
+        }
+      ],
+      "status": "active",
+      "name": "Jooka Trouser ",
+      "created_at": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1756472952,
+        "nanoseconds": 141000000
+      },
+      "compare_price": 2250,
+      "track_variants": true,
+      "featured": true,
+      "tags": []
+    },
+    {
+      "id": "PQt5HVOkpWt8mqzOo8YQ",
+      "track_inventory": true,
+      "colors": [
+        "Green",
+        "Red",
+        "Gray"
+      ],
+      "price": 999.99,
+      "allow_backorder": false,
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "seo_keywords": [],
+      "inventory_count": 98,
+      "description": "Elevate your everyday style with the Jooka Premium Cotton Polo Shirt, crafted for comfort, class, and versatility. This polo features a timeless beige hue, a modern tailored fit, and our signature Jooka logo embroidered on the left chest in a refined gold accent. Whether you're heading to work, attending a casual event, or just relaxing, this shirt keeps you looking sharp without compromising on comfort.\n\n",
+      "updated_at": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1755494518,
+        "nanoseconds": 714000000
+      },
+      "slug": "jooka-premium-cotton-polo-shirt",
+      "images": [
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1755494512595",
+          "format": "jpg",
+          "height": 1200,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1755494512595",
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1755494512/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1755494512595.jpg",
+          "is_primary": true,
+          "width": 1200
+        },
+        {
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1755494514/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1755494514256.jpg",
+          "width": 1200,
+          "is_primary": false,
+          "height": 1200,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1755494514256",
+          "format": "jpg",
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1755494514256"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1755494516189",
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1755494516189",
+          "height": 1200,
+          "format": "jpg",
+          "width": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1755494516/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1755494516189.jpg",
+          "is_primary": false
+        }
+      ],
+      "status": "active",
+      "name": "Jooka Premium Cotton Polo Shirt",
+      "created_at": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1755494517,
+        "nanoseconds": 655000000
+      },
+      "track_variants": true,
+      "featured": true,
+      "tags": []
+    },
+    {
+      "id": "rof2YDrd9NZGYs06IhUW",
+      "seo_keywords": [],
+      "allow_backorder": false,
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "short_description": "Elevate your everyday style with the JOOKA Classic Logo Tee. Crafted from soft, breathable cotton, this emerald-green staple pairs minimalist design with a luxurious gold-foil chest logo, delivering effortless sophistication whether you’re dressing up or keeping it casual.",
+      "inventory_count": 159,
+      "colors": [
+        "Green",
+        "Red",
+        "Gray",
+        "White",
+        "Brown",
+        "Khaki"
+      ],
+      "track_inventory": true,
+      "price": 1000,
+      "created_at": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1754454395,
+        "nanoseconds": 305000000
+      },
+      "name": "JOOKA Classic Tee",
+      "tags": [],
+      "featured": true,
+      "track_variants": true,
+      "slug": "jooka-classic-tee",
+      "description": "Key Features\nPremium Fabric: 100% combed, ring-spun cotton for a smooth hand-feel and all-day comfort.\n\nSignature Branding: Discreet gold-foil “JOOKA” logo and swoosh, heat-pressed for a subtle metallic sheen that won’t crack or peel.\n\nTailored Fit: Modern unisex cut—relaxed through the shoulders, slightly tapered at the waist—for a flattering silhouette on any body type.\n\nDurable Construction: Double-stitched sleeves and hem, reinforced crew neckline, and pre-shrunk finish to maintain shape wash after wash.\n\nEco-Conscious Dyes: Low-impact, OEKO-TEX®-certified dyes give the rich emerald tone its depth while reducing environmental footprint.",
+      "updated_at": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1754454397,
+        "nanoseconds": 738000000
+      },
+      "images": [
+        {
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454381272",
+          "height": 1200,
+          "format": "jpg",
+          "color": "Green",
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754454381/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454381272.jpg",
+          "width": 1200,
+          "is_primary": true,
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454381272"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454383131",
+          "color": "Red",
+          "width": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754454383/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454383131.jpg",
+          "is_primary": false,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454383131",
+          "height": 1200,
+          "format": "jpg"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454385116",
+          "format": "jpg",
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454385116",
+          "height": 1200,
+          "is_primary": false,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754454385/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454385116.jpg",
+          "width": 1200,
+          "color": "Gray"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454386993",
+          "width": 1200,
+          "is_primary": false,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754454387/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454386993.jpg",
+          "color": "Khaki",
+          "format": "jpg",
+          "height": 1200,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454386993"
+        },
+        {
+          "width": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754454388/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454388679.jpg",
+          "is_primary": false,
+          "color": "White",
+          "format": "jpg",
+          "height": 1200,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454388679",
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454388679"
+        },
+        {
+          "format": "jpg",
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454390415",
+          "height": 1200,
+          "width": 1200,
+          "is_primary": false,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754454391/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454390415.jpg",
+          "color": "Brown",
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754454390415"
+        }
+      ],
+      "status": "active"
+    },
+    {
+      "id": "uI2mmbi7i91ynbuGbVMX",
+      "colors": [
+        "Black",
+        "Navy",
+        "Green",
+        "Brown",
+        "Gray",
+        "Blue"
+      ],
+      "track_inventory": true,
+      "price": 2000,
+      "seo_keywords": [],
+      "allow_backorder": false,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "short_description": "Stay stylish and protected with the Jooka Premium Windbreaker Jacket, crafted for comfort and everyday performance. Made from high-quality, lightweight, and water-resistant material, this jacket is perfect for breezy mornings, light rain, or layering up on cool days.",
+      "inventory_count": 582,
+      "slug": "jooka-premium-windbreaker-jacket",
+      "description": "Key Features:\nPremium Build: Durable yet soft polyester shell with a smooth inner lining ensures comfort all day long.\n\nWater & Wind Resistant: Shields you from light rain and wind, making it a great outerwear choice for transitional weather.\n\nSleek Design: Charcoal grey tone with a minimalistic golden \"Jooka\" logo embroidered on the chest for a refined and sporty look.\n\nFunctional Fit: Elastic cuffs and hem offer a snug fit, while the full-zip front and stand-up collar add extra protection.\n\nConvenient Storage: Two side zip pockets to keep your essentials secure.\n\nPerfect For:\nCasual wear\n\nOutdoor workouts\n\nTravel and commuting\n\nLight sports activities",
+      "updated_at": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1754282608,
+        "nanoseconds": 701000000
+      },
+      "images": [
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282597474",
+          "height": 1200,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282597474",
+          "format": "jpg",
+          "color": "Green",
+          "is_primary": false,
+          "width": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754282638/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282597474.jpg"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282600237",
+          "color": "Navy",
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754282639/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282600237.jpg",
+          "width": 1200,
+          "is_primary": false,
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282600237",
+          "height": 1200,
+          "format": "jpg"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282601652",
+          "format": "jpg",
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282601652",
+          "height": 1200,
+          "is_primary": false,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754282640/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282601652.jpg",
+          "width": 1200,
+          "color": "Brown"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282603092",
+          "format": "jpg",
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282603092",
+          "height": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754282642/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282603092.jpg",
+          "width": 1200,
+          "is_primary": false,
+          "color": "Black"
+        },
+        {
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282604527",
+          "height": 1200,
+          "format": "jpg",
+          "color": "Blue",
+          "is_primary": false,
+          "width": 1200,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754282643/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282604527.jpg",
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282604527"
+        },
+        {
+          "id": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282606155",
+          "publicId": "jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282606155",
+          "height": 1200,
+          "format": "jpg",
+          "color": "Gray",
+          "is_primary": false,
+          "secure_url": "https://res.cloudinary.com/dufryrjgu/image/upload/v1754282645/jooka/products/RATtvdNavOOssC5gwD7jQM3N16E3_1754282606155.jpg",
+          "width": 1200
+        }
+      ],
+      "status": "active",
+      "created_at": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1754282608,
+        "nanoseconds": 196000000
+      },
+      "name": "Jooka Premium Windbreaker Jacket",
+      "tags": [],
+      "track_variants": true,
+      "featured": true
+    }
+  ]
+}

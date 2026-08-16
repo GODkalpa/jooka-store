@@ -11,7 +11,7 @@ COPY package.json ./
 # Install dependencies for building
 RUN npm install
 
-# Copy source code
+# Copy source code and scripts
 COPY . .
 
 # Build backend and admin dashboard
@@ -23,5 +23,5 @@ ENV HOST=0.0.0.0
 
 EXPOSE 9000
 
-# Run migrations and start Medusa from .medusa/server where built assets reside
-CMD ["sh", "-c", "npx medusa db:migrate && cd .medusa/server && npx medusa start -H 0.0.0.0"]
+# Auto-migrate, auto-create admin user, auto-seed products, and start Medusa
+CMD ["sh", "-c", "npx medusa db:migrate && (npx medusa user --email owner@jookawear.com --password JookaAdmin2026! || true) && (npx medusa exec ./src/scripts/seed-jooka.ts || true) && cd .medusa/server && npx medusa start -H 0.0.0.0"]
