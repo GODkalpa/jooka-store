@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "build": "medusa build --no-lint",
-    "start": "medusa db:migrate && medusa build --no-lint && medusa start -H 0.0.0.0",
+    "start": "medusa db:migrate && medusa build --no-lint && cd .medusa/server && npx medusa start -H 0.0.0.0",
     "dev": "medusa develop --no-lint",
     "lint": "medusa lint",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
